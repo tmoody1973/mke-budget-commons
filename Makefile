@@ -47,6 +47,7 @@ mcp-dev:
 
 mcp-test:
 	cd mcp && node test/smoke.mjs
+	cd mcp && node test/smoke_county.mjs
 
 explainer:
 	python -m scripts.build_explainer

@@ -45,6 +45,15 @@ const VINTAGE: Record<string, string> = {
   requested: "requested", proposed: "proposed", recommended: "recommended",
 };
 
+// A department's grand total, gov-agnostic. The city ledger prints it as an
+// untyped reserved-code total (account NULL, line_kind 'total'); the county book
+// prints it as the 'Total Expenditures' category row. A department only ever
+// carries one of the two shapes, so this predicate is exact for both. `p` is an
+// optional table-alias prefix (e.g. "f.").
+const grandTotalPred = (p = "") =>
+  `((${p}line_kind='total' AND ${p}account IS NULL)` +
+  ` OR (${p}line_kind='category' AND ${p}line_description='Total Expenditures'))`;
+
 // --------------------------------------------------------------------------- //
 server.registerTool(
   "list_departments",
@@ -58,7 +67,7 @@ server.registerTool(
     // its divisions, so MAX gives the whole-department total without double-count.
     const rows = await query(
       `SELECT d.dept_id, d.canonical_name,
-              MAX(f.amount) FILTER (WHERE f.line_kind='total' AND f.account IS NULL
+              MAX(f.amount) FILTER (WHERE ${grandTotalPred("f.")}
                                       AND f.amount_kind='adopted') AS adopted_total
          FROM dim_department d JOIN fact_budget_line f USING (dept_id)
         WHERE d.gov_id = $1
@@ -84,12 +93,17 @@ server.registerTool(
       fiscal_year: z.number().int().default(2026), doc_type: z.string().default("adopted"),
     },
   },
-  async ({ dept, gov, doc_type }) => {
+  async ({ dept, gov, fiscal_year, doc_type }) => {
     const cands = await resolveDept(gov, dept);
     if (cands.length === 0) return fail(`No department matches "${dept}".`);
     if (cands.length > 1) return ok({ ambiguous: true, candidates: cands });
     const dept_id = cands[0].dept_id;
     const vintage = VINTAGE[doc_type] ?? "adopted";
+
+    // County chapters report category rollups, not the city's reserved-code
+    // ledger — a different breakdown (Personnel/Operations/Debt/Interdepartmental
+    // → Total Expenditures; Total Expenditures − Total Revenues = Tax Levy).
+    if (gov === "county") return ok(await countyDeptBudget(cands[0], fiscal_year));
 
     // MAX over reserved-code totals gives the department rollup (summary unit)
     // without double-counting divisions. Provenance comes from the same rows.
@@ -283,23 +297,64 @@ server.registerTool(
 async function deptYear(dept_id: string, year: number) {
   const [a] = await query(
     `SELECT
-       MAX(amount) FILTER (WHERE account IS NULL) AS grand,
-       MAX(amount) FILTER (WHERE account='006000') AS net_salaries,
-       MAX(amount) FILTER (WHERE account='006100') AS fringe,
-       MAX(amount) FILTER (WHERE account='006300') AS operating,
-       MAX(amount) FILTER (WHERE account='006800') AS equipment
-     FROM fact_budget_line WHERE dept_id=$1 AND fiscal_year=$2 AND line_kind='total'`,
+       MAX(amount) FILTER (WHERE ${grandTotalPred()}) AS grand,
+       MAX(amount) FILTER (WHERE account='006000' AND line_kind='total') AS net_salaries,
+       MAX(amount) FILTER (WHERE account='006100' AND line_kind='total') AS fringe,
+       MAX(amount) FILTER (WHERE account='006300' AND line_kind='total') AS operating,
+       MAX(amount) FILTER (WHERE account='006800' AND line_kind='total') AS equipment
+     FROM fact_budget_line WHERE dept_id=$1 AND fiscal_year=$2`,
     [dept_id, year],
   );
   const cites = await query(
     `SELECT DISTINCT doc_id, source_page FROM fact_budget_line
-      WHERE dept_id=$1 AND fiscal_year=$2 AND line_kind='total' AND account IS NULL LIMIT 5`,
+      WHERE dept_id=$1 AND fiscal_year=$2 AND ${grandTotalPred()} LIMIT 5`,
     [dept_id, year]);
   return { a, cites };
 }
 
 const pct = (from: number | null, to: number | null) =>
   from && to != null ? Math.round(((to - from) / from) * 1000) / 10 : null;
+
+// County department budget: category rollups keyed by fiscal_year (each county
+// fiscal year maps to exactly one printed column). No per-position ledger — only
+// an FTE count. Provenance from the same category rows.
+async function countyDeptBudget(cand: { dept_id: string; canonical_name: string }, fiscal_year: number) {
+  const [agg] = await query(
+    `SELECT
+       MAX(amount) FILTER (WHERE line_description='Personnel Costs') AS personnel,
+       MAX(amount) FILTER (WHERE line_description='Operations Costs') AS operations,
+       MAX(amount) FILTER (WHERE line_description='Debt & Depreciation') AS debt,
+       MAX(amount) FILTER (WHERE line_description='Interdepartmental Charges') AS interdept,
+       MAX(amount) FILTER (WHERE line_description='Total Expenditures') AS total_expenditures,
+       MAX(amount) FILTER (WHERE line_description='Total Revenues') AS total_revenues,
+       MAX(amount) FILTER (WHERE line_description='Tax Levy') AS tax_levy,
+       MAX(units)  FILTER (WHERE line_kind='fte' AND line_description ILIKE 'Full Time Pos%') AS fte
+     FROM fact_budget_line
+      WHERE dept_id=$1 AND fiscal_year=$2 AND line_kind IN ('category','fte')`,
+    [cand.dept_id, fiscal_year]);
+  const anchors = await query(
+    `SELECT line_description, amount, source_page, doc_id FROM fact_budget_line
+      WHERE dept_id=$1 AND fiscal_year=$2 AND line_kind='category'`, [cand.dept_id, fiscal_year]);
+  const programs = await query(
+    `SELECT DISTINCT division FROM fact_budget_line
+      WHERE dept_id=$1 AND line_kind='program' AND division IS NOT NULL ORDER BY division`,
+    [cand.dept_id]);
+  return {
+    department: cand.canonical_name, dept_id: cand.dept_id, gov: "county", fiscal_year,
+    totals: {
+      personnel_costs: num(agg.personnel), operations_costs: num(agg.operations),
+      debt_and_depreciation: num(agg.debt), interdepartmental_charges: num(agg.interdept),
+      total_expenditures: num(agg.total_expenditures),
+      total_revenues: num(agg.total_revenues), tax_levy: num(agg.tax_levy),
+    },
+    fte: { full_time: num(agg.fte) },
+    strategic_program_areas: programs.map((p) => p.division),
+    citations: citations(anchors),
+    note: "County departments report category rollups (no per-position ledger). "
+      + "Personnel + Operations + Debt & Depreciation + Interdepartmental = Total Expenditures; "
+      + "Total Expenditures − Total Revenues = Tax Levy.",
+  };
+}
 
 server.registerTool(
   "compare_years",
@@ -352,7 +407,7 @@ server.registerTool(
     const rows = await query(
       `SELECT amount_kind, MAX(amount) AS grand, MIN(doc_id) AS doc_id, MIN(source_page) AS source_page
          FROM fact_budget_line
-        WHERE dept_id=$1 AND fiscal_year=$2 AND line_kind='total' AND account IS NULL
+        WHERE dept_id=$1 AND fiscal_year=$2 AND ${grandTotalPred()}
         GROUP BY amount_kind`, [cands[0].dept_id, fiscal_year]);
     const present = STAGE_ORDER
       .map((k) => rows.find((r) => r.amount_kind === k))
@@ -394,6 +449,51 @@ server.registerTool(
   async ({ term }) => ok(lookupGlossary(term)),
 );
 
+// County "where the money goes": the category breakdown (Personnel + Operations
+// + Debt & Depreciation + Interdepartmental = Total Expenditures), per department
+// or countywide. Reads category rows (line_kind='category'), so program rows and
+// the non-departmental ledger chapters (no category summary) are excluded — the
+// countywide figure is the sum of standard department chapters.
+async function budgetBreakdownCounty(fiscal_year: number, dept?: string) {
+  let where = "d.gov_id='county' AND f.fiscal_year=$1 AND f.line_kind='category'";
+  const params: any[] = [fiscal_year];
+  let label = "county departments";
+  if (dept) {
+    const cands = await resolveDept("county", dept);
+    if (cands.length === 0) return fail(`No department matches "${dept}".`);
+    if (cands.length > 1) return ok({ ambiguous: true, candidates: cands });
+    params.push(cands[0].dept_id);
+    where += ` AND f.dept_id=$${params.length}`;
+    label = cands[0].canonical_name;
+  }
+  const [r] = await query(
+    `WITH per_dept AS (
+       SELECT f.dept_id,
+         MAX(f.amount) FILTER (WHERE f.line_description='Personnel Costs') personnel,
+         MAX(f.amount) FILTER (WHERE f.line_description='Operations Costs') operations,
+         MAX(f.amount) FILTER (WHERE f.line_description='Debt & Depreciation') debt,
+         MAX(f.amount) FILTER (WHERE f.line_description='Interdepartmental Charges') interdept,
+         MAX(f.amount) FILTER (WHERE f.line_description='Total Expenditures') total
+       FROM fact_budget_line f JOIN dim_department d USING (dept_id)
+       WHERE ${where} GROUP BY f.dept_id)
+     SELECT SUM(personnel) personnel, SUM(operations) operations, SUM(debt) debt,
+            SUM(interdept) interdept, SUM(total) total FROM per_dept`,
+    params);
+  const grand = num(r.total);
+  if (!grand) return fail(`No expenditure total for ${label} in ${fiscal_year}.`);
+  const part = (v: any) => { const n = num(v) ?? 0; return { amount: n, pct: Math.round((n / grand) * 1000) / 10 }; };
+  return ok({
+    scope: `county · ${label}`, fiscal_year, total_expenditures: grand,
+    breakdown: {
+      personnel: part(r.personnel), operations: part(r.operations),
+      debt_and_depreciation: part(r.debt), interdepartmental_charges: part(r.interdept),
+    },
+    note: "County expenditures by category (Personnel + Operations + Debt & Depreciation + "
+      + "Interdepartmental = Total Expenditures). Countywide excludes the non-departmental "
+      + "ledger chapters, which carry no category summary.",
+  });
+}
+
 server.registerTool(
   "budget_breakdown",
   {
@@ -406,6 +506,8 @@ server.registerTool(
     },
   },
   async ({ gov, fiscal_year, dept }) => {
+    if (gov === "county") return budgetBreakdownCounty(fiscal_year, dept);
+
     let where = "d.gov_id=$1 AND f.fiscal_year=$2 AND f.line_kind='total'";
     const params: any[] = [gov, fiscal_year];
     let label = `${gov} citywide`;
@@ -466,10 +568,10 @@ server.registerTool(
   async ({ gov, year_a, year_b, measure, direction, limit }) => {
     const rows = await query(
       `SELECT d.canonical_name AS dept,
-         MAX(f.amount) FILTER (WHERE f.line_kind='total' AND f.account IS NULL AND f.fiscal_year=$2) a,
-         MAX(f.amount) FILTER (WHERE f.line_kind='total' AND f.account IS NULL AND f.fiscal_year=$3) b,
-         MIN(f.source_page) FILTER (WHERE f.line_kind='total' AND f.account IS NULL AND f.fiscal_year=$3) page,
-         MIN(f.doc_id)      FILTER (WHERE f.line_kind='total' AND f.account IS NULL AND f.fiscal_year=$3) doc_id
+         MAX(f.amount) FILTER (WHERE ${grandTotalPred("f.")} AND f.fiscal_year=$2) a,
+         MAX(f.amount) FILTER (WHERE ${grandTotalPred("f.")} AND f.fiscal_year=$3) b,
+         MIN(f.source_page) FILTER (WHERE ${grandTotalPred("f.")} AND f.fiscal_year=$3) page,
+         MIN(f.doc_id)      FILTER (WHERE ${grandTotalPred("f.")} AND f.fiscal_year=$3) doc_id
        FROM fact_budget_line f JOIN dim_department d USING (dept_id)
        WHERE d.gov_id=$1 GROUP BY d.canonical_name`, [gov, year_a, year_b]);
     let items = rows
