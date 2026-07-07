@@ -23,18 +23,32 @@ from dotenv import load_dotenv
 
 from parsers.city_detailed import ADOPTED_LAYOUT, REQUESTED_LAYOUT, parse_book, slugify
 from parsers.reconcile_city import ALL_VINTAGES, REQUESTED_VINTAGES, reconcile_unit
+from parsers.county_operating import (
+    BOOK_END as COUNTY_BOOK_END, BOOK_START as COUNTY_BOOK_START,
+    DEFAULT_PDF as COUNTY_PDF, DOC_ID as COUNTY_DOC_ID,
+    parse_book as parse_county_book,
+)
+from parsers.reconcile_county import reconcile_dept
 
 ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_SQL = ROOT / "db" / "schema.sql"
 SOURCES_YML = ROOT / "data" / "raw" / "sources.yml"
 ENV_PATH = ROOT / ".env"
 
-# Every parsed doc: canonical Parquet + how to reconcile it. Add a row per new doc.
+# Every city doc: canonical Parquet + how to reconcile it (band-parsed Layout).
 DOCS = [
     {"parquet": ROOT / "data/canonical/city/2026/adopted/city-detailed-book.parquet",
      "layout": ADOPTED_LAYOUT, "vintages": ALL_VINTAGES},
     {"parquet": ROOT / "data/canonical/city/2027/requested/city-requested-book.parquet",
      "layout": REQUESTED_LAYOUT, "vintages": REQUESTED_VINTAGES},
+]
+
+# County docs: table-detection parse, no Layout/band parsing. Facts + a separate
+# reconciliation path (parse_county_book → reconcile_dept). Add a row per new doc.
+COUNTY_DOCS = [
+    {"parquet": ROOT / "data/canonical/county/2026/adopted/county-operating-book.parquet",
+     "pdf": COUNTY_PDF, "doc_id": COUNTY_DOC_ID,
+     "pages": (COUNTY_BOOK_START, COUNTY_BOOK_END)},
 ]
 
 DATA_TABLES = [
@@ -45,6 +59,7 @@ DATA_TABLES = [
 STATUS_MAP = {
     "PASS": "pass",
     "FAIL": "open",
+    "ROUNDING": "source_inconsistency",  # documented prior-year-actual rounding (county)
     "SOURCE_INCONSISTENCY": "source_inconsistency",
     "NOT_RECONCILABLE": "not_reconcilable",
 }
@@ -160,6 +175,30 @@ def load_reconciliation(cur) -> int:
     return len(rows)
 
 
+def load_reconciliation_county(cur) -> int:
+    """County reconciliation rows — different parse/reconcile path (no Layout)."""
+    rows, seen = [], set()
+    for doc in COUNTY_DOCS:
+        lo, hi = doc["pages"]
+        depts = parse_county_book(doc["pdf"], lo, hi)
+        for d in depts:
+            for c in reconcile_dept(d):
+                scope = f"pp{d.page_start}-{d.page_end} | {d.label} | {c.name} | {c.vintage}"
+                key = (doc["doc_id"], scope)
+                if key in seen:
+                    continue
+                seen.add(key)
+                rows.append((doc["doc_id"], scope, _clean(c.actual), _clean(c.expected),
+                             STATUS_MAP.get(c.status, "open"), c.disposition or None))
+    cur.executemany(
+        """INSERT INTO reconciliation_result
+           (doc_id, scope, extracted_total, printed_total, status, notes)
+           VALUES (%s,%s,%s,%s,%s,%s)""",
+        rows,
+    )
+    return len(rows)
+
+
 def ensure_readonly_role(cur, owner_url: str) -> str:
     """(Re)create SELECT-only role mcp_ro; return its connection URL (stable password)."""
     load_dotenv(ENV_PATH)
@@ -196,7 +235,11 @@ def main() -> None:
     url = os.environ.get("DATABASE_URL")
     if not url:
         raise SystemExit("DATABASE_URL not set (see .env)")
-    df = pd.concat([pd.read_parquet(d["parquet"]) for d in DOCS], ignore_index=True)
+    df = pd.concat(
+        [pd.read_parquet(d["parquet"]) for d in DOCS]
+        + [pd.read_parquet(d["parquet"]) for d in COUNTY_DOCS],
+        ignore_index=True,
+    )
 
     with psycopg.connect(url, autocommit=False) as conn:
         with conn.cursor() as cur:
@@ -205,7 +248,7 @@ def main() -> None:
             load_documents(cur)
             load_departments(cur, df)
             n_facts = load_facts(cur, df)
-            n_recon = load_reconciliation(cur)
+            n_recon = load_reconciliation(cur) + load_reconciliation_county(cur)
             ro_url = ensure_readonly_role(cur, url)
         conn.commit()
 

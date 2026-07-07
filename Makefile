@@ -30,7 +30,8 @@ parse-city-requested:
 	python -m scripts.report_city_requested
 
 parse-county-operating:
-	python parsers/county_operating.py --fy $(FY) --type $(TYPE)
+	python -m parsers.county_operating
+	python -m scripts.report_county_operating
 
 reconcile:
 	pytest tests/ -v
@@ -46,6 +47,7 @@ mcp-dev:
 
 mcp-test:
 	cd mcp && node test/smoke.mjs
+	cd mcp && node test/smoke_county.mjs
 
 explainer:
 	python -m scripts.build_explainer
