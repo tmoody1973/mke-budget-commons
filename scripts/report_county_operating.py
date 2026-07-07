@@ -33,6 +33,8 @@ def main() -> None:
     rows, rounding_notes, findings = [], [], []
     green = rounding = nonstd = finding = 0
     tot_pass = tot_fail = tot_round = tot_nr = 0
+    n_revledger = sum(1 for d in depts if d.chapter_kind == "revenue_ledger")
+    n_nondept = sum(1 for d in depts if d.chapter_kind == "nondept_programs")
 
     for d in depts:
         checks = reconcile_dept(d)
@@ -86,12 +88,14 @@ def main() -> None:
         "$1–$3 because the county reports actuals rounded independently (each component "
         "rounded to the dollar). The drift is bounded by `(N+1)/2` for an N-component sum "
         "and surfaced per check — never silently absorbed.",
-        f"- ⚪ **{nonstd} non-standard chapters** — the non-departmental sections "
-        "(Non-Departmental Revenues/Expenditures, Cultural Contributions, Property Taxes) "
-        "carry revenue-ledger / rollup tables, not the standard Personnel→Total "
-        "Expenditures departmental summary. Labeled `NOT_RECONCILABLE` — never silently "
-        "trusted. Line-item reconciliation of these ledgers is a documented follow-up.",
-        f"- ❌ **{finding} open dollar findings.**",
+        f"- 🧾 **{n_revledger} non-departmental revenue ledgers** (Non-Departmental Revenues, "
+        "Property Taxes) — item lines sum exactly to the printed Total Revenues (the $184.6M "
+        "revenue ledger and the $309.0M property-tax levy), captured as facts with page "
+        "citations rather than dropped.",
+        f"- 🧩 **{n_nondept} non-departmental program lists** (Cultural Contributions, "
+        "Non-Departmental Expenditures) — no chapter total, but each program area's own "
+        "Expenditures − Revenues = Tax Levy identity reconciles.",
+        f"- ⚪ **{nonstd} still non-standard** · ❌ **{finding} open dollar findings.**",
         "",
         f"Checks: **{tot_pass} PASS**, **{tot_round} ROUNDING** (prior-year actual, bounded), "
         f"**{tot_fail} FAIL**, **{tot_nr} NOT_RECONCILABLE**.",
@@ -129,12 +133,12 @@ def main() -> None:
             )
 
     lines += ["", "## All chapters", "",
-              "| Pages | Agency | Department | PASS | ROUND | FAIL | NR | Programs | Status |",
-              "|---|---|---|--:|--:|--:|--:|--:|---|"]
+              "| Pages | Agency | Department | Kind | PASS | ROUND | FAIL | NR | Programs | Status |",
+              "|---|---|---|---|--:|--:|--:|--:|--:|---|"]
     for d, s, status in rows:
         lines.append(
             f"| {d.page_start}–{d.page_end} | {d.agency_no} | {d.department_printed[:38]} | "
-            f"{s['passed']} | {len(s['rounding'])} | {len(s['failed'])} | "
+            f"{d.chapter_kind} | {s['passed']} | {len(s['rounding'])} | {len(s['failed'])} | "
             f"{len(s['not_reconcilable'])} | {len(d.programs)} | {status} |"
         )
 

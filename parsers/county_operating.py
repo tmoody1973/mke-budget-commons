@@ -114,6 +114,11 @@ class CountyDept:
     rows: list[Row] = field(default_factory=list)          # BUDGET SUMMARY rows
     programs: list[ProgramSummary] = field(default_factory=list)
     lines: list[BudgetLine] = field(default_factory=list)
+    # standard        = the usual departmental BUDGET SUMMARY table
+    # revenue_ledger  = a non-departmental revenue ledger (items → Total Revenues)
+    # nondept_programs = a non-departmental chapter that is only a list of
+    #                    Strategic-Program-Area rollups, with no chapter total
+    chapter_kind: str = "standard"
 
     @property
     def label(self) -> str:
@@ -166,6 +171,42 @@ def _is_program_summary(table: list[list]) -> bool:
         if r and (r[0] or "").strip().lower() == _EXP_MARKER:
             return any(_num(c) is not None for c in r[1:])
     return False
+
+
+_TOTAL_REV_NAMES = (_TOTAL_REV, "total revenue")  # county prints both plural & singular
+
+
+def _is_revenue_ledger(table: list[list]) -> bool:
+    """A standalone revenue ledger (the non-departmental revenue chapters):
+    a 'Revenues' marker + item rows + a 'Total Revenue(s)' row, with NO
+    expenditure side. Distinct from a department summary (which prints revenues
+    inside a table that also carries Total Expenditures)."""
+    names = {(r[0] or "").strip().lower() for r in table if r and r[0]}
+    has_total_rev = any(n in names for n in _TOTAL_REV_NAMES)
+    return (has_total_rev and _REV_MARKER in names
+            and _TOTAL_EXP not in names and "personnel costs" not in names)
+
+
+def _parse_revenue_ledger(table: list[list]) -> list[Row]:
+    """Revenue items → section='revenue'; the printed total → section='total_rev'."""
+    rows: list[Row] = []
+    in_revenues = False
+    for raw in table[1:]:  # skip header
+        if not raw or not raw[0]:
+            continue
+        name = re.sub(r"\s+", " ", raw[0]).strip()   # collapse wrapped item names
+        low = name.lower()
+        if low == _REV_MARKER:
+            in_revenues = True
+            continue
+        values = [_num(c) for c in raw[1:5]]
+        variance = _num(raw[5]) if len(raw) > 5 else None
+        if low in _TOTAL_REV_NAMES:
+            rows.append(Row(name=name, section="total_rev", values=values, variance=variance))
+            continue
+        if in_revenues and any(v is not None for v in values):
+            rows.append(Row(name=name, section="revenue", values=values, variance=variance))
+    return rows
 
 
 def _parse_summary_rows(table: list[list]) -> list[Row]:
@@ -273,13 +314,28 @@ def parse_department(pages: list, page_start: int, agency_no: str,
             if dept.summary_page is None and _is_budget_summary(table):
                 dept.rows = _parse_summary_rows(table)
                 dept.summary_page = pageno
-            elif _is_program_summary(table):
-                name = pending_program or f"(program on p{pageno})"
+            elif pending_program and _is_program_summary(table):
+                # A Program Budget Summary always follows a Strategic Program Area
+                # heading. Requiring the heading avoids mis-capturing the stray
+                # summary/crosswalk tables in the non-departmental chapters as
+                # phantom programs.
                 dept.programs.append(
-                    ProgramSummary(name=name, page=pageno,
+                    ProgramSummary(name=pending_program, page=pageno,
                                    rows=_parse_program_rows(table))
                 )
                 pending_program = None
+            elif dept.summary_page is None and _is_revenue_ledger(table):
+                # Non-departmental revenue chapters (Non-Departmental Revenues,
+                # Property Taxes): a standalone revenue ledger, no expenditure side.
+                dept.rows = _parse_revenue_ledger(table)
+                dept.summary_page = pageno
+                dept.chapter_kind = "revenue_ledger"
+
+    # A non-departmental chapter that is only a list of program-area rollups (no
+    # BUDGET SUMMARY, no revenue ledger) has no chapter total to reconcile against;
+    # its programs are still captured as facts.
+    if dept.summary_page is None and dept.programs:
+        dept.chapter_kind = "nondept_programs"
 
     dept.lines = _emit_lines(dept)
     return dept

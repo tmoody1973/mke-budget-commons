@@ -102,6 +102,20 @@ def _sum_col(rows: list[Row], i: int) -> tuple[float, int]:
     return round(total, 2), n
 
 
+def _reconcile_program_taxlevy(prog, cmp) -> None:
+    """A program-area rollup's own identity: Expenditures − Revenues == Tax Levy."""
+    exp = next((r for r in prog.rows if r.section == "expenditure"), None)
+    rev = next((r for r in prog.rows if r.section == "revenue"), None)
+    tl = next((r for r in prog.rows if r.section == "tax_levy"), None)
+    if exp is None or tl is None:
+        return
+    for i, label in VINTAGE_LABEL.items():
+        e = exp.values[i]
+        r = (rev.values[i] if rev else 0.0) or 0.0
+        cmp(f"[{prog.name}] Expenditures − Revenues == Tax Levy", label,
+            tl.values[i], None if e is None else round(e - r, 2), addends=2)
+
+
 def reconcile_dept(dept: CountyDept) -> list[Check]:
     checks: list[Check] = []
     page = dept.summary_page or dept.page_start
@@ -132,9 +146,41 @@ def reconcile_dept(dept: CountyDept) -> list[Check]:
     total_rev = next(iter(dept.rows_in("total_rev")), None)
     tax_levy = next(iter(dept.rows_in("tax_levy")), None)
 
+    def variance_checks():
+        # The printed Variance column = 2026 adopted − 2025 budget, per row.
+        for r in dept.rows:
+            if r.section == "personnel":
+                continue
+            a, b = r.values[_ADOPTED_COL], r.values[_BUDGET_COL]
+            if r.variance is None or a is None or b is None:
+                continue
+            cmp(f"variance[{r.name}] == 2026 adopted − 2025 budget", "variance",
+                r.variance, round(a - b, 2))
+
+    # Non-departmental revenue ledger (Non-Departmental Revenues, Property Taxes):
+    # the only printed identity is that the revenue items sum to Total Revenues.
+    if dept.chapter_kind == "revenue_ledger":
+        for i, label in VINTAGE_LABEL.items():
+            rsum, rn = _sum_col(rev_rows, i)
+            cmp("revenue items == Total Revenues", label,
+                _col(total_rev, i), rsum if rn else None, addends=rn)
+        variance_checks()
+        return checks
+
+    # Non-departmental program list (Cultural Contributions, Non-Departmental
+    # Expenditures): no chapter total, but each program area's own
+    # Expenditures − Revenues == Tax Levy identity is checkable.
+    if dept.chapter_kind == "nondept_programs":
+        for prog in dept.programs:
+            _reconcile_program_taxlevy(prog, cmp)
+        if not checks:
+            checks.append(Check("has reconcilable total", "-", None, None,
+                                "NOT_RECONCILABLE", "program list with no chapter total"))
+        return checks
+
     if total_exp is None or tax_levy is None:
-        # Non-standard chapter (e.g. some non-departmental sections). Nothing to
-        # reconcile against — labeled, never silently trusted.
+        # Non-standard chapter with nothing to reconcile against — labeled, never
+        # silently trusted.
         checks.append(Check("has BUDGET SUMMARY table", "-", None, None,
                             "NOT_RECONCILABLE", "no standard summary table on this chapter"))
         return checks
@@ -158,14 +204,7 @@ def reconcile_dept(dept: CountyDept) -> list[Check]:
             _col(tax_levy, i), None if te is None else round(te - tr, 2), addends=2)
 
     # 4. Variance column == (2026 adopted − 2025 budget), per summary row
-    for r in dept.rows:
-        if r.section == "personnel":
-            continue
-        a, b = r.values[_ADOPTED_COL], r.values[_BUDGET_COL]
-        if r.variance is None or a is None or b is None:
-            continue
-        cmp(f"variance[{r.name}] == 2026 adopted − 2025 budget", "variance",
-            r.variance, round(a - b, 2))
+    variance_checks()
 
     # 5. Program-area Expenditures roll up to the department Total Expenditures
     if dept.programs:
