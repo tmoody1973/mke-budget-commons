@@ -1,0 +1,104 @@
+doc_id,gov_id,fiscal_year,doc_type,department_printed,division,fund,org,sbcl,account,line_description,line_kind,pay_range,amount,amount_kind,units,flags,source_page
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Budgetary Control Unit (1Bcu=1Du),,,,,City Attorney (B)(C)(E)(P)(Y),position,EOE,169436.0,budget,1.0,B|C|E|P|Y,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Budgetary Control Unit (1Bcu=1Du),,,,,City Attorney (B)(C)(E)(P)(Y),position,EOE,169436.0,adopted,1.0,B|C|E|P|Y,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Budgetary Control Unit (1Bcu=1Du),,,,,Deputy City Attorney (A)(Y),position,1OX,665967.0,budget,4.0,A|Y,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Budgetary Control Unit (1Bcu=1Du),,,,,Deputy City Attorney (A)(Y),position,1OX,740492.0,adopted,4.0,A|Y,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Budgetary Control Unit (1Bcu=1Du),,,,,Business Finance Manager (Y),position,1IX,112456.0,budget,1.0,Y,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Budgetary Control Unit (1Bcu=1Du),,,,,Business Finance Manager (Y),position,1IX,112456.0,adopted,1.0,Y,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Budgetary Control Unit (1Bcu=1Du),,,,,City Attorney Human Resources Admin.,position,1IX,103245.0,budget,1.0,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Budgetary Control Unit (1Bcu=1Du),,,,,City Attorney Human Resources Admin.,position,1IX,115360.0,adopted,1.0,,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Legal Division,,,,,Asst. City Attorney V (A)(Y),position,2TX,4075916.0,budget,36.0,A|Y,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Legal Division,,,,,Asst. City Attorney V (A)(Y),position,2TX,3856916.0,adopted,36.0,A|Y,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Legal Division,,,,,Paralegal,position,2FN,129142.0,budget,2.0,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Legal Division,,,,,Paralegal,position,2FN,129142.0,adopted,2.0,,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Legal Division,,,,,Paralegal Lead,position,2IX,68244.0,budget,1.0,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Legal Division,,,,,Paralegal Lead,position,2IX,68244.0,adopted,1.0,,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Administrative Division,,,,,Legal Administrative Specialist-Senior,position,2GX,151089.0,budget,2.0,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Administrative Division,,,,,Legal Administrative Specialist-Senior,position,2GX,151089.0,adopted,2.0,,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Administrative Division,,,,,Investigator/Adjuster (Y),position,2IX,151197.0,budget,2.0,Y,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Administrative Division,,,,,Investigator/Adjuster (Y),position,2IX,151928.0,adopted,2.0,Y,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Administrative Division,,,,,Legal Office Assistant - Lead,position,5JN,136957.0,budget,2.0,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Administrative Division,,,,,Legal Office Assistant - Lead,position,5JN,136957.0,adopted,2.0,,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Administrative Division,,,,,Business Systems Coordinator,position,2LX,90887.0,budget,1.0,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Administrative Division,,,,,Business Systems Coordinator,position,2LX,91805.0,adopted,1.0,,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Administrative Division,,,,,Legal Office Assistant - Senior,position,5IN,64744.0,budget,1.0,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Administrative Division,,,,,Legal Office Assistant - Senior,position,5IN,64744.0,adopted,1.0,,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Administrative Division,,,,,Legal Office Assistant 2,position,6MN,225699.0,budget,4.0,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Administrative Division,,,,,Legal Office Assistant 2,position,6MN,169274.0,adopted,3.0,,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Administrative Division,,,,,Business Services Specialist,position,2FN,73077.0,budget,1.0,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Administrative Division,,,,,Business Services Specialist,position,2FN,73077.0,adopted,1.0,,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Administrative Division,,,,,Office Assistant III,position,6GN,46719.0,budget,1.0,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Administrative Division,,,,,Office Assistant III,position,6GN,46719.0,adopted,1.0,,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Administrative Division,,,,,Office Assistant II (D),position,6DN,42051.0,budget,1.0,D,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Administrative Division,,,,,Office Assistant II (D),position,6DN,46336.0,adopted,1.0,D,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Docket Unit,,,,,Docketing Specialist,position,5KN,66166.0,budget,1.0,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Docket Unit,,,,,Docketing Specialist,position,5KN,66166.0,adopted,1.0,,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Docket Unit,,,,,Docketing Coordinator,position,2JN,95390.0,budget,1.0,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Docket Unit,,,,,Docketing Coordinator,position,2JN,96344.0,adopted,1.0,,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Auxiliary Personnel,,,,,Paralegal,position,2FN,,budget,1.0,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Auxiliary Personnel,,,,,Paralegal,position,2FN,,adopted,1.0,,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Auxiliary Personnel,,,,,Total Before Adjustments,subtotal,,6468382.0,budget,64.0,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Auxiliary Personnel,,,,,Total Before Adjustments,subtotal,,6286485.0,adopted,63.0,,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Auxiliary Personnel,,,,,Personnel Cost Adjustment,subtotal,,-190271.0,budget,,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Auxiliary Personnel,,,,,Personnel Cost Adjustment,subtotal,,-131238.0,adopted,,,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Auxiliary Personnel,,,,,Gross Salaries & Wages Total,subtotal,,6278111.0,budget,64.0,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Auxiliary Personnel,,,,,Gross Salaries & Wages Total,subtotal,,6155247.0,adopted,63.0,,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Auxiliary Personnel,,,,,Reimbursable Services Deduction,subtotal,,-250000.0,budget,,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Auxiliary Personnel,,,,,Reimbursable Services Deduction,subtotal,,-25000.0,adopted,,,47
+city-2026-adopted-detailed,city,2024,adopted,City Attorney,Auxiliary Personnel,0001,1490,R999,006000,NET SALARIES & WAGES TOTAL*,total,,2225681.0,actual,,,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Auxiliary Personnel,0001,1490,R999,006000,NET SALARIES & WAGES TOTAL*,total,,6028111.0,budget,64.0,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Auxiliary Personnel,0001,1490,R999,006000,NET SALARIES & WAGES TOTAL*,total,,6130247.0,adopted,63.0,,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Auxiliary Personnel,,,,,O&M FTE'S,fte,,,budget,61.5,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Auxiliary Personnel,,,,,O&M FTE'S,fte,,,adopted,62.8,,47
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,Auxiliary Personnel,,,,,NON-O&M FTE'S,fte,,,budget,2.5,,47
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,Auxiliary Personnel,,,,,NON-O&M FTE'S,fte,,,adopted,0.2,,47
+city-2026-adopted-detailed,city,2024,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,006100,ESTIMATED EMPLOYEE FRINGE BENEFITS,total,,1001556.0,actual,,,48
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,006100,ESTIMATED EMPLOYEE FRINGE BENEFITS,total,,2712650.0,budget,,,48
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,006100,ESTIMATED EMPLOYEE FRINGE BENEFITS,total,,2758611.0,adopted,,,48
+city-2026-adopted-detailed,city,2024,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,630100,General Office Expense,expenditure,,26971.0,actual,,,48
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,630100,General Office Expense,expenditure,,22000.0,budget,,,48
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,630100,General Office Expense,expenditure,,27000.0,adopted,,,48
+city-2026-adopted-detailed,city,2024,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,633500,Non-Vehicle Equipment Rental,expenditure,,19301.0,actual,,,48
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,633500,Non-Vehicle Equipment Rental,expenditure,,17500.0,budget,,,48
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,633500,Non-Vehicle Equipment Rental,expenditure,,19500.0,adopted,,,48
+city-2026-adopted-detailed,city,2024,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,634000,Professional Services,expenditure,,257439.0,actual,,,48
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,634000,Professional Services,expenditure,,223000.0,budget,,,48
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,634000,Professional Services,expenditure,,260000.0,adopted,,,48
+city-2026-adopted-detailed,city,2024,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,634500,Information Technology Services,expenditure,,19862.0,actual,,,48
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,634500,Information Technology Services,expenditure,,55200.0,budget,,,48
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,634500,Information Technology Services,expenditure,,45000.0,adopted,,,48
+city-2026-adopted-detailed,city,2024,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,635000,Property Services,expenditure,,1500.0,actual,,,48
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,635000,Property Services,expenditure,,1500.0,budget,,,48
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,635000,Property Services,expenditure,,1500.0,adopted,,,48
+city-2026-adopted-detailed,city,2024,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,636500,Other Operating Services,expenditure,,60977.0,actual,,,48
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,636500,Other Operating Services,expenditure,,58000.0,budget,,,48
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,636500,Other Operating Services,expenditure,,61000.0,adopted,,,48
+city-2026-adopted-detailed,city,2024,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,637501,Reimburse Other Departments,expenditure,,52427.0,actual,,,48
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,637501,Reimburse Other Departments,expenditure,,30000.0,budget,,,48
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,637501,Reimburse Other Departments,expenditure,,32105.0,adopted,,,48
+city-2026-adopted-detailed,city,2024,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,006300,OPERATING EXPENDITURES TOTAL*,total,,438477.0,actual,,,48
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,006300,OPERATING EXPENDITURES TOTAL*,total,,407200.0,budget,,,48
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,City Attorney 25 -,0001,1490,R999,006300,OPERATING EXPENDITURES TOTAL*,total,,446105.0,adopted,,,48
+city-2026-adopted-detailed,city,2024,adopted,City Attorney,City Attorney 25 -,,,,,"Books, Law, Lot",expenditure,,15949.0,actual,,,48
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,City Attorney 25 -,,,,,"Books, Law, Lot",expenditure,,17000.0,budget,,,48
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,City Attorney 25 -,,,,,"Books, Law, Lot",expenditure,,17000.0,adopted,,,48
+city-2026-adopted-detailed,city,2024,adopted,City Attorney,City Attorney 25 -,,,,,Subtotal - Additional Equipment,subtotal,,15949.0,actual,,,48
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,City Attorney 25 -,,,,,Subtotal - Additional Equipment,subtotal,,17000.0,budget,,,48
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,City Attorney 25 -,,,,,Subtotal - Additional Equipment,subtotal,,17000.0,adopted,,,48
+city-2026-adopted-detailed,city,2024,adopted,City Attorney,City Attorney 25 -,,,,,Office Furniture,expenditure,,2631.0,actual,,,48
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,City Attorney 25 -,,,,,Office Furniture,expenditure,,3000.0,budget,,,48
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,City Attorney 25 -,,,,,Office Furniture,expenditure,,3000.0,adopted,,,48
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,City Attorney 25 -,,,,,Electronic Equipment,expenditure,,2000.0,budget,,,48
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,City Attorney 25 -,,,,,Electronic Equipment,expenditure,,1000.0,adopted,,,48
+city-2026-adopted-detailed,city,2024,adopted,City Attorney,City Attorney 25 -,,,,,Computer Peripherals,expenditure,,354.0,actual,,,48
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,City Attorney 25 -,,,,,Computer Peripherals,expenditure,,4000.0,budget,,,48
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,City Attorney 25 -,,,,,Computer Peripherals,expenditure,,1000.0,adopted,,,48
+city-2026-adopted-detailed,city,2024,adopted,City Attorney,City Attorney 25 -,,,,,Subtotal - Replacement Equipment,subtotal,,2985.0,actual,,,48
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,City Attorney 25 -,,,,,Subtotal - Replacement Equipment,subtotal,,9000.0,budget,,,48
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,City Attorney 25 -,,,,,Subtotal - Replacement Equipment,subtotal,,5000.0,adopted,,,48
+city-2026-adopted-detailed,city,2024,adopted,City Attorney,City Attorney 26 -,0001,1490,R999,006800,EQUIPMENT PURCHASES TOTAL*,total,,18934.0,actual,,,49
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,City Attorney 26 -,0001,1490,R999,006800,EQUIPMENT PURCHASES TOTAL*,total,,26000.0,budget,,,49
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,City Attorney 26 -,0001,1490,R999,006800,EQUIPMENT PURCHASES TOTAL*,total,,22000.0,adopted,,,49
+city-2026-adopted-detailed,city,2024,adopted,City Attorney,City Attorney Budgetary Control,,,,,UNIT TOTAL (1BCU=1DU),total,,3684648.0,actual,,,49
+city-2026-adopted-detailed,city,2025,adopted,City Attorney,City Attorney Budgetary Control,,,,,UNIT TOTAL (1BCU=1DU),total,,9173961.0,budget,,,49
+city-2026-adopted-detailed,city,2026,adopted,City Attorney,City Attorney Budgetary Control,,,,,UNIT TOTAL (1BCU=1DU),total,,9356963.0,adopted,,,49

@@ -1,0 +1,153 @@
+doc_id,gov_id,fiscal_year,doc_type,department_printed,division,fund,org,sbcl,account,line_description,line_kind,pay_range,amount,amount_kind,units,flags,source_page
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Policy And Administration Section,,,,,Chief Information Officer (A)(B)(Y)(CCR),position,1SX,155126.0,budget,1.0,A|B|Y|CCR,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Policy And Administration Section,,,,,Chief Information Officer (A)(B)(Y)(CCR),position,1SX,155126.0,adopted,1.0,A|B|Y|CCR,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Policy And Administration Section,,,,,ITMD Policy and Administration Mgr. (Y),position,2LX,148234.0,budget,1.0,Y,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Policy And Administration Section,,,,,ITMD Policy and Administration Mgr. (Y),position,1PX,148234.0,adopted,1.0,Y,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Policy And Administration Section,,,,,Financial Specialist,position,2GX,78194.0,budget,1.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Policy And Administration Section,,,,,Financial Specialist,position,2GX,78194.0,adopted,1.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Policy And Administration Section,,,,,ITMD Administrative Assistant,position,6KN,55039.0,budget,1.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Policy And Administration Section,,,,,ITMD Administrative Assistant,position,6KN,55039.0,adopted,1.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Policy And Administration Section,,,,,IT Security and Audit Compliance Analyst,position,2JX,74223.0,budget,1.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Policy And Administration Section,,,,,IT Security and Audit Compliance Analyst,position,2JX,74223.0,adopted,1.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Policy And Administration Section,,,,,Information Security Manager,position,2OX,111041.0,budget,1.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Policy And Administration Section,,,,,Information Security Manager,position,2OX,112152.0,adopted,1.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Network And Telecommunications Section,,,,,Telecommunications Supervisor,position,1LX,106907.0,budget,1.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Network And Telecommunications Section,,,,,Telecommunications Supervisor,position,1LX,106907.0,adopted,1.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Network And Telecommunications Section,,,,,Telecommunications Engineer,position,2LX,106685.0,budget,1.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Network And Telecommunications Section,,,,,Telecommunications Engineer,position,2LX,106685.0,adopted,1.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Network And Telecommunications Section,,,,,Telecommun. Analyst-Project Leader,position,2OX,118622.0,budget,1.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Network And Telecommunications Section,,,,,Telecommun. Analyst-Project Leader,position,2OX,118622.0,adopted,1.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Network And Telecommunications Section,,,,,Communications Facilities Coord.,position,3UN,331591.0,budget,4.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Network And Telecommunications Section,,,,,Communications Facilities Coord.,position,3UN,331591.0,adopted,4.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Network And Telecommunications Section,,,,,Telecommunications Analyst - Sr.,position,2LX,206794.0,budget,2.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Network And Telecommunications Section,,,,,Telecommunications Analyst - Sr.,position,2LX,206794.0,adopted,2.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Applications And Development Section,,,,,Systems Integration Manager (Y),position,1OX,137979.0,budget,1.0,Y,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Applications And Development Section,,,,,Systems Integration Manager (Y),position,1OX,128880.0,adopted,1.0,Y,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Applications And Development Section,,,,,Systems Analyst - Sr.,position,2MX,552132.0,budget,5.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Applications And Development Section,,,,,Systems Analyst - Sr.,position,2MX,552132.0,adopted,5.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Applications And Development Section,,,,,IT Project Manager,position,1NX,266614.0,budget,2.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Applications And Development Section,,,,,IT Project Manager,position,1NX,266613.0,adopted,2.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Applications And Development Section,,,,,IT Project Coordinator,position,2JX,159690.0,budget,2.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Applications And Development Section,,,,,IT Project Coordinator,position,2JX,153009.0,adopted,2.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Applications And Development Section,,,,,Programmer Analyst,position,2LN,189199.0,budget,2.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Applications And Development Section,,,,,Programmer Analyst,position,2LN,182952.0,adopted,2.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Applications And Development Section,,,,,Programmer II,position,2QN,72034.0,budget,1.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Applications And Development Section,,,,,Programmer II,position,3QN,62948.0,adopted,1.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Applications And Development Section,,,,,Internet Analyst - Sr.,position,5GN,61575.0,budget,1.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Applications And Development Section,,,,,Internet Analyst - Sr.,position,5GN,61575.0,adopted,1.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Applications And Development Section,,,,,GIS Analyst - Sr,position,2JX,79877.0,budget,1.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Applications And Development Section,,,,,GIS Analyst - Sr,position,2JX,80676.0,adopted,1.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Applications And Development Section,,,,,Geographic Info. Tech. II,position,3QN,64932.0,budget,1.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Applications And Development Section,,,,,Geographic Info. Tech. II,position,3QN,64932.0,adopted,1.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Applications And Development Section,,,,,GIS Analyst,position,2HN,146319.0,budget,2.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Applications And Development Section,,,,,GIS Analyst,position,2HN,148322.0,adopted,2.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Applications And Development Section,,,,,Public Safety Geographic Info. Analyst,position,2IX,78640.0,budget,1.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Applications And Development Section,,,,,Public Safety Geographic Info. Analyst,position,2JX,78640.0,adopted,1.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Applications And Development Section,,,,,Public Safety Systems Administrator,position,2MX,194642.0,budget,2.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Applications And Development Section,,,,,Systems Analyst - Project Leader,position,2OX,243251.0,budget,2.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Applications And Development Section,,,,,Systems Analyst - Project Leader,position,2OX,243251.0,adopted,2.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Applications And Development Section,,,,,Information Technology Specialist,position,3QN,58776.0,budget,1.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Applications And Development Section,,,,,Information Technology Specialist,position,3QN,58776.0,adopted,1.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Information Services Section,,,,,Information Services Manager (Y),position,1OX,138056.0,budget,1.0,Y,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Information Services Section,,,,,Information Services Manager (Y),position,1OX,139437.0,adopted,1.0,Y,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Information Services Section,,,,,IT Support Services Supervisor,position,1LX,110840.0,budget,1.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Information Services Section,,,,,IT Support Services Supervisor,position,1LX,110840.0,adopted,1.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Information Services Section,,,,,IT Support Specialist - Lead,position,2LN,387412.0,budget,4.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Information Services Section,,,,,IT Support Specialist - Lead,position,2LN,390052.0,adopted,4.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Information Services Section,,,,,IT Support Specialist - Senior,position,2JN,587356.0,budget,7.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Information Services Section,,,,,IT Support Specialist - Senior,position,2JN,578800.0,adopted,7.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Information Services Section,,,,,IT Support Specialist,position,2JX,396974.0,budget,6.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Information Services Section,,,,,IT Support Specialist,position,2HN,396974.0,adopted,6.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Information Services Section,,,,,IT Support Associate,position,5IN,179053.0,budget,3.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Information Services Section,,,,,IT Support Associate,position,5IN,182634.0,adopted,3.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Information Services Section,,,,,Database Administrator,position,1OX,134418.0,budget,1.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Information Services Section,,,,,Database Administrator,position,1OX,134418.0,adopted,1.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Information Services Section,,,,,Database Associate,position,2JX,79442.0,budget,1.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Information Services Section,,,,,Database Associate,position,2JX,80237.0,adopted,1.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Information Services Section,,,,,Public Safety Systems Administrator,position,2MX,194642.0,adopted,2.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Unified Call Center,,,,,Unified Call Center Manager,position,1HX,101718.0,budget,1.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Unified Call Center,,,,,Unified Call Center Manager,position,1HX,101718.0,adopted,1.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Unified Call Center,,,,,Unified Call Center Supervisor,position,1FX,170971.0,budget,2.0,,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Unified Call Center,,,,,Unified Call Center Supervisor,position,1FX,170971.0,adopted,2.0,,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Unified Call Center,,,,,Unified Call Center Rep. – Lead (D),position,2GN,146918.0,budget,2.0,D,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Unified Call Center,,,,,Unified Call Center Rep. – Lead (D),position,2GN,146918.0,adopted,2.0,D,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Unified Call Center,,,,,Unified Call Center Representative 3 (E),position,5IN,669339.0,budget,11.0,E,40
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Unified Call Center,,,,,Unified Call Center Representative 3 (E),position,5IN,700835.0,adopted,11.0,E,40
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Auxiliary Personnel,,,,,Unified Call Center Representative 3 (E),position,5IN,,budget,21.0,E,41
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Auxiliary Personnel,,,,,Unified Call Center Representative 3 (E),position,5IN,,adopted,21.0,E,41
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Auxiliary Personnel,,,,,Systems Analyst - Sr (ERP),position,2MX,99976.0,budget,1.0,ERP,41
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Auxiliary Personnel,,,,,Systems Analyst - Sr (ERP),position,2MX,99976.0,adopted,1.0,ERP,41
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Auxiliary Personnel,,,,,Total Before Adjustments,subtotal,,7000589.0,budget,101.0,,41
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Auxiliary Personnel,,,,,Total Before Adjustments,subtotal,,7004725.0,adopted,101.0,,41
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Auxiliary Personnel,,,,,Overtime Compensated,subtotal,,30000.0,budget,,,41
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Auxiliary Personnel,,,,,Overtime Compensated,subtotal,,30000.0,adopted,,,41
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Auxiliary Personnel,,,,,Personnel Cost Adjustment,subtotal,,-140124.0,budget,,,41
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Auxiliary Personnel,,,,,Personnel Cost Adjustment,subtotal,,-144230.0,adopted,,,41
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Auxiliary Personnel,,,,,Gross Salaries & Wages Total,subtotal,,6890465.0,budget,101.0,,41
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Auxiliary Personnel,,,,,Gross Salaries & Wages Total,subtotal,,6890495.0,adopted,101.0,,41
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Auxiliary Personnel,,,,,Reimbursable Services Deduction,subtotal,,-626000.0,budget,,,41
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Auxiliary Personnel,,,,,Reimbursable Services Deduction,subtotal,,-845151.0,adopted,,,41
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Auxiliary Personnel,,,,,Capital Improvements Deduction,subtotal,,-234781.0,budget,,,41
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Auxiliary Personnel,,,,,Capital Improvements Deduction,subtotal,,-395175.0,adopted,,,41
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Auxiliary Personnel,,,,,Grants & Aids Deduction,subtotal,,-25203.0,budget,,,41
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Auxiliary Personnel,,,,,Grants & Aids Deduction,subtotal,,-25205.0,adopted,,,41
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,006000,NET SALARIES & WAGES TOTAL,total,,1700211.0,actual,,,41
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,006000,NET SALARIES & WAGES TOTAL,total,,6004481.0,budget,101.0,,41
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,006000,NET SALARIES & WAGES TOTAL,total,,5624964.0,adopted,101.0,,41
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Auxiliary Personnel,,,,,O&M FTE'S,fte,,,budget,49.0,,41
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Auxiliary Personnel,,,,,O&M FTE'S,fte,,,adopted,64.77,,41
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Auxiliary Personnel,,,,,NON-O&M FTE'S,fte,,,budget,30.0,,41
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Auxiliary Personnel,,,,,NON-O&M FTE'S,fte,,,adopted,15.23,,41
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,006100,ESTIMATED EMPLOYEE FRINGE BENEFITS,total,,748311.0,actual,,,41
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,006100,ESTIMATED EMPLOYEE FRINGE BENEFITS,total,,2702016.0,budget,,,41
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,006100,ESTIMATED EMPLOYEE FRINGE BENEFITS,total,,2531234.0,adopted,,,41
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,630100,General Office Expense,expenditure,,452.0,actual,,,41
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,630100,General Office Expense,expenditure,,2000.0,budget,,,41
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,630100,General Office Expense,expenditure,,2000.0,adopted,,,41
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,630500,Tools & Machinery Parts,expenditure,,40.0,actual,,,41
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,632000,Other Operating Supplies,expenditure,,140.0,actual,,,41
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,632000,Other Operating Supplies,expenditure,,3100.0,budget,,,41
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,632000,Other Operating Supplies,expenditure,,3100.0,adopted,,,41
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,633500,Non-Vehicle Equipment Rental,expenditure,,2616.0,actual,,,41
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,633500,Non-Vehicle Equipment Rental,expenditure,,2700.0,budget,,,41
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,633500,Non-Vehicle Equipment Rental,expenditure,,2700.0,adopted,,,41
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,634000,Professional Services,expenditure,,43158.0,actual,,,41
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,634000,Professional Services,expenditure,,75000.0,budget,,,41
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,634000,Professional Services,expenditure,,75000.0,adopted,,,41
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,634500,Information Technology Services,expenditure,,3154467.0,actual,,,41
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,634500,Information Technology Services,expenditure,,4020535.0,budget,,,41
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Auxiliary Personnel,0001,1515,R999,634500,Information Technology Services,expenditure,,4777421.0,adopted,,,41
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Department Of Administration 19 -,0001,1515,R999,635000,Property Services,expenditure,,528563.0,actual,,,42
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Department Of Administration 19 -,0001,1515,R999,635000,Property Services,expenditure,,8500.0,budget,,,42
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Department Of Administration 19 -,0001,1515,R999,635000,Property Services,expenditure,,8500.0,adopted,,,42
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Department Of Administration 19 -,0001,1515,R999,635500,Infrastructure Services,expenditure,,84570.0,actual,,,42
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Department Of Administration 19 -,0001,1515,R999,636500,Other Operating Services,expenditure,,272.0,actual,,,42
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Department Of Administration 19 -,0001,1515,R999,636500,Other Operating Services,expenditure,,15000.0,budget,,,42
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Department Of Administration 19 -,0001,1515,R999,636500,Other Operating Services,expenditure,,15000.0,adopted,,,42
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Department Of Administration 19 -,0001,1515,R999,637501,Reimburse Other Departments,expenditure,,36731.0,actual,,,42
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Department Of Administration 19 -,0001,1515,R999,637501,Reimburse Other Departments,expenditure,,30500.0,budget,,,42
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Department Of Administration 19 -,0001,1515,R999,637501,Reimburse Other Departments,expenditure,,30500.0,adopted,,,42
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Department Of Administration 19 -,0001,1515,R999,006300,OPERATING EXPENDITURES TOTAL,total,,3851009.0,actual,,,42
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Department Of Administration 19 -,0001,1515,R999,006300,OPERATING EXPENDITURES TOTAL,total,,4157335.0,budget,,,42
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Department Of Administration 19 -,0001,1515,R999,006300,OPERATING EXPENDITURES TOTAL,total,,4914221.0,adopted,,,42
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Department Of Administration 19 -,,,,,Computer Equipment,expenditure,,10481.0,actual,,,42
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Department Of Administration 19 -,,,,,Computer Equipment,expenditure,,25000.0,budget,,,42
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Department Of Administration 19 -,,,,,Computer Equipment,expenditure,,25000.0,adopted,,,42
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Department Of Administration 19 -,,,,,Subtotal - Additional Equipment,subtotal,,10481.0,actual,,,42
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Department Of Administration 19 -,,,,,Subtotal - Additional Equipment,subtotal,,25000.0,budget,,,42
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Department Of Administration 19 -,,,,,Subtotal - Additional Equipment,subtotal,,25000.0,adopted,,,42
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Department Of Administration 19 -,0001,1515,R999,006800,EQUIPMENT PURCHASES TOTAL,total,,10481.0,actual,,,42
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Department Of Administration 19 -,0001,1515,R999,006800,EQUIPMENT PURCHASES TOTAL,total,,25000.0,budget,,,42
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Department Of Administration 19 -,0001,1515,R999,006800,EQUIPMENT PURCHASES TOTAL,total,,25000.0,adopted,,,42
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Department Of Administration 19 -,0001,1510,R158,006300,Enterprise Resource Management*,expenditure,,1888223.0,actual,,,42
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Department Of Administration 19 -,0001,1510,R158,006300,Enterprise Resource Management*,expenditure,,2001292.0,budget,,,42
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Department Of Administration 19 -,0001,1510,R158,006300,Enterprise Resource Management*,expenditure,,2001292.0,adopted,,,42
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Department Of Administration 19 -,0001,1510,R148,006800,Computer Maintenance/Upgrade*,expenditure,,224430.0,actual,,,42
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Department Of Administration 19 -,0001,1510,R148,006800,Computer Maintenance/Upgrade*,expenditure,,225000.0,budget,,,42
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Department Of Administration 19 -,0001,1510,R148,006800,Computer Maintenance/Upgrade*,expenditure,,225000.0,adopted,,,42
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Department Of Administration 19 -,,,,,SPECIAL FUNDS TOTAL,total,,2112653.0,actual,,,42
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Department Of Administration 19 -,,,,,SPECIAL FUNDS TOTAL,total,,2226292.0,budget,,,42
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Department Of Administration 19 -,,,,,SPECIAL FUNDS TOTAL,total,,2226292.0,adopted,,,42
+city-2026-adopted-detailed,city,2024,adopted,Department Of Administration,Information And Technology,,,,,MANAGEMENT DIVISION TOTAL,total,,8422665.0,actual,,,42
+city-2026-adopted-detailed,city,2025,adopted,Department Of Administration,Information And Technology,,,,,MANAGEMENT DIVISION TOTAL,total,,15115124.0,budget,,,42
+city-2026-adopted-detailed,city,2026,adopted,Department Of Administration,Information And Technology,,,,,MANAGEMENT DIVISION TOTAL,total,,15321711.0,adopted,,,42

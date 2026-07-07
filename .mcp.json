@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "mke-budget": {
+      "command": "npm",
+      "args": ["--prefix", "mcp", "run", "start"]
+    }
+  }
+}

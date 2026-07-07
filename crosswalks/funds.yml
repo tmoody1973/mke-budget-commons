@@ -1,0 +1,14 @@
+# City budget fund sections (A–N) from the Plan & Budget Summary.
+funds:
+  A: General City Purposes
+  B: Employee Retirement
+  C: Capital Improvements
+  D: City Debt
+  F: Common Council Contingent Fund
+  G: Transportation Fund
+  H: Grant and Aid
+  I: Economic Development Fund
+  J: Water Works
+  K: Sewer Maintenance
+  M: County Delinquent Taxes
+  N: Settlement Fund

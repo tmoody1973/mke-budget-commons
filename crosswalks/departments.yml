@@ -1,0 +1,23 @@
+# Department identity across fiscal years and renames.
+# dept_id is the stable slug; aliases are names as printed each year.
+# Human-reviewed each fiscal year — renames/mergers happen constantly.
+#
+# Seed a few known city departments; the parser derives printed names,
+# you map them to stable slugs here.
+departments:
+  - dept_id: city-doa
+    gov: city
+    canonical_name: Department of Administration
+    aliases:
+      2026: ["DEPARTMENT OF ADMINISTRATION"]
+  - dept_id: city-city-attorney
+    gov: city
+    canonical_name: City Attorney
+    aliases:
+      2026: ["CITY ATTORNEY"]
+  - dept_id: county-treasurer
+    gov: county
+    canonical_name: Office of the County Treasurer
+    org_code: "309"
+    aliases:
+      2026: ["Office of the County Treasurer (309)"]

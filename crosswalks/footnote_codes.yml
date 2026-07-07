@@ -1,0 +1,26 @@
+# Footnote codes appended to position titles in the city Detailed Budget,
+# captured raw into flags[] by the parser.
+#
+# IMPORTANT: many footnote meanings are defined PER DEPARTMENT in that chapter's
+# own legend and can differ between departments. The entries below are the
+# standard/common ones observed in the 2026 Adopted book; treat department-
+# specific ones as "see the source page's legend". The MCP `glossary` tool
+# surfaces these in plain language.
+2026:
+  # Standard, consistent across departments:
+  Y: "Required to file a statement of economic interests (Code of Ethics, Milwaukee Code Ch. 303)."
+  X: "A private-auto allowance may be paid (Milwaukee Code 350-183)."
+  CCR: "Must annually contact each Common Council member for feedback on performance."
+  # Common but department-specific in exact wording:
+  A: "Often a bilingual designation; exact meaning per department legend."
+  B: "Department-specific reporting/administration requirement — see chapter legend."
+  C: "Department-specific requirement — see chapter legend."
+  D: "Reimbursement / bilingual designation — varies by department."
+  E: "Bilingual or count designation — varies by department."
+  # Grant-expiry family — positions that END when a grant/award expires unless renewed
+  # (journalist-relevant: "what happens when the money runs out"):
+  RST: "Expires unless the ReCAST Milwaukee Project grant is extended."
+  VR:  "Expires unless the Violence Reduction (VR-PHAST) grant is extended."
+  DOL: "Terminates when the Go MKE award expires unless the grant is extended."
+  ERP: "Position authority eliminated at year-end unless re-authorized by the Common Council."
+  CD:  "Grant/award-conditioned position — see chapter legend."

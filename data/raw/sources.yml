@@ -1,0 +1,62 @@
+# Source document manifest. Both gov sites block bot fetching — download manually,
+# then record URL / retrieved date / sha256 here. sha256: `shasum -a 256 <file>`.
+
+documents:
+  - doc_id: city-2026-adopted-detailed
+    gov: city
+    fiscal_year: 2026
+    doc_type: adopted
+    doc_family: detailed
+    file: data/raw/city/2026-CITY-OF-MILWAUKEE-DETAILED-BUDGET4.pdf
+    source_url: https://city.milwaukee.gov/ImageLibrary/Groups/doaBudgetOffice/2026-CITY-OF-MILWAUKEE-DETAILED-BUDGET4.pdf
+    pages: 269
+    text_layer: native          # clean, no OCR
+    retrieved_on: 2026-07-07
+    sha256: TODO
+
+  - doc_id: city-2026-adopted-summary
+    gov: city
+    fiscal_year: 2026
+    doc_type: adopted
+    doc_family: summary
+    file: data/raw/city/2026-PLAN-AND-BUDGET-SUMMARY.pdf
+    source_url: https://city.milwaukee.gov/ImageLibrary/Groups/doaBudgetOffice/2026-PLAN-AND-BUDGET-SUMMARY.pdf
+    pages: 218
+    text_layer: native
+    retrieved_on: 2026-07-07
+    sha256: TODO
+
+  - doc_id: city-2027-requested-detailed
+    gov: city
+    fiscal_year: 2027
+    doc_type: requested
+    doc_family: detailed
+    file: data/raw/city/2027-Budget-Requests---City-of-Milwaukee.pdf
+    source_url: https://city.milwaukee.gov/ImageLibrary/Groups/doaBudgetOffice/2026-Requested-Budget.pdf  # verify 2027 URL
+    pages: 463
+    text_layer: native
+    retrieved_on: 2026-07-07
+    sha256: TODO
+
+  - doc_id: county-2026-adopted-operating
+    gov: county
+    fiscal_year: 2026
+    doc_type: adopted
+    doc_family: operating
+    file: data/raw/county/2026-Adopted-Operating-Budget-.pdf
+    source_url: https://county.milwaukee.gov/files/county/administrative-services/PSB/BudgetsCopy-1/2026-Budget/Adopted-Operating/2026-Adopted-Operating-Budget-.pdf
+    pages: 442
+    text_layer: native
+    retrieved_on: 2026-07-07
+    sha256: TODO
+
+  - doc_id: county-2026-adopted-capital
+    gov: county
+    fiscal_year: 2026
+    doc_type: adopted
+    doc_family: capital
+    file: data/raw/county/2026-Adopted-Capital-Budget4pt2.pdf
+    pages: 333
+    text_layer: ocr             # Acrobat Paper Capture — NOT reconciliation-grade. Phase 5+.
+    retrieved_on: 2026-07-07
+    sha256: TODO

@@ -1,0 +1,84 @@
+# Verified arithmetic errors INSIDE the official source PDF.
+#
+# In each case the extracted line items are correct — they were confirmed by
+# summing the document's own printed line items by hand — but the document's
+# printed TOTAL disagrees. This is an error in the official budget book, not a
+# parser bug (the BetaNYC methodology hit two of these in the NYC budget).
+#
+# A disposition only suppresses a FAIL when the printed total AND the extracted
+# sum still match the verified values below. If the parser ever changes those
+# numbers, the discrepancy resurfaces as a FAIL rather than being hidden.
+
+- doc_id: city-2026-adopted-detailed
+  page_start: 86
+  unit: Fire Department Budgetary Control Unit (Summary)
+  check: "operating items == 006300"
+  vintage: actual
+  printed_total: 9306699
+  extracted_sum: 9306698
+  note: >-
+    2024 operating line items on p.86 sum to 9,306,698, but the printed
+    OPERATING EXPENDITURES TOTAL prints 9,306,699 — a $1 arithmetic error in
+    the source document. Every line item extracts exactly.
+
+- doc_id: city-2026-adopted-detailed
+  page_start: 93
+  unit: Fire Department (Firefighting / EMS decision unit)
+  check: "operating items == 006300"
+  vintage: actual
+  printed_total: 3036395
+  extracted_sum: 3036394
+  note: >-
+    2024 operating line items on pp.93-95 sum to 3,036,394, but the printed
+    OPERATING EXPENDITURES TOTAL prints 3,036,395 — a $1 arithmetic error in
+    the source document. Every line item extracts exactly.
+
+- doc_id: city-2026-adopted-detailed
+  page_start: 137
+  unit: Police Department
+  check: "operating items == 006300"
+  vintage: actual
+  printed_total: 19645898
+  extracted_sum: 19661717
+  note: >-
+    2024 operating line items on p.147 sum to 19,661,717, but the printed
+    OPERATING EXPENDITURES TOTAL prints 19,645,898 — the document's total is
+    $15,819 low. Verified against the raw text layer; every item extracts exactly.
+
+- doc_id: city-2026-adopted-detailed
+  page_start: 73
+  unit: Department of Employee Relations (Summary)
+  check: "operating items == 006300"
+  vintage: adopted
+  printed_total: 618260
+  extracted_sum: 617287
+  note: >-
+    2026 operating line items on p.73 sum to 617,287, but the printed OPERATING
+    EXPENDITURES TOTAL prints 618,260 — the document's total is $973 high.
+
+- doc_id: city-2026-adopted-detailed
+  page_start: 149
+  unit: Port Milwaukee
+  check: "operating items == 006300"
+  vintage: actual
+  printed_total: 1510930
+  extracted_sum: 1467439
+  note: >-
+    2024 operating line items on p.150 sum to 1,467,439, but the printed
+    OPERATING EXPENDITURES TOTAL prints 1,510,930 — the document's total is
+    $43,491 high. Verified against the raw text layer; the three blank categories
+    are genuinely blank and every valued item extracts exactly.
+
+- doc_id: city-2026-adopted-detailed
+  page_start: 149
+  unit: Port Milwaukee
+  check: "special items == SPECIAL FUNDS TOTAL"
+  vintage: actual
+  printed_total: 3128675
+  extracted_sum: 3115665
+  note: >-
+    2024 special-fund line items on p.151 sum to 3,115,665, but the printed
+    SPECIAL FUNDS TOTAL prints 3,128,675 — the document's total is $13,010 high.
+    Proven: the SAME rows' 2025 and 2026 columns reconcile to their printed
+    totals exactly (4,417,606 and 3,146,052), so the extraction and per-vintage
+    column assignment are correct and only the printed 2024 total is wrong.

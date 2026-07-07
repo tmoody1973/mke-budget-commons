@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+node_modules/
+.env
+.DS_Store
+# raw PDFs are large; commit deliberately, not by accident during dev
+# (comment the next line out once you've decided to version the source docs)
+# data/raw/**/*.pdf
