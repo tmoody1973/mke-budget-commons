@@ -83,4 +83,44 @@ def test_fully_green_share_does_not_regress(book):
     green = sum(1 for d in book
                 if not summarize(reconcile_dept(d))["failed"]
                 and not summarize(reconcile_dept(d))["not_reconcilable"])
-    assert green >= 33, f"fully-reconciled chapters regressed to {green}/{len(book)}"
+    assert green == len(book), f"fully-reconciled chapters regressed to {green}/{len(book)}"
+
+
+def test_no_chapter_is_unreconciled(book):
+    """Every chapter — including the non-departmental ledgers — reconciles against
+    some printed identity. Nothing is silently dropped or left NOT_RECONCILABLE."""
+    for d in book:
+        s = summarize(reconcile_dept(d))
+        assert not s["not_reconcilable"], \
+            f"{d.label} left NOT_RECONCILABLE: {[c.disposition for c in s['not_reconcilable']]}"
+
+
+def test_chapter_kinds(book):
+    from collections import Counter
+    kinds = Counter(d.chapter_kind for d in book)
+    assert kinds["revenue_ledger"] == 2, f"expected 2 revenue ledgers, got {kinds['revenue_ledger']}"
+    assert kinds["nondept_programs"] == 2, f"expected 2 non-dept program lists, got {kinds['nondept_programs']}"
+    assert kinds["standard"] >= 30, f"standard departments regressed to {kinds['standard']}"
+
+
+def test_revenue_ledger_reconciles(book):
+    """Non-Departmental Revenues: the revenue item lines sum exactly to the
+    printed Total Revenues in the adopted column, and are captured as facts."""
+    d = next(u for u in book if u.department_printed.startswith("Non - Departmental Revenues"))
+    assert d.chapter_kind == "revenue_ledger"
+    checks = reconcile_dept(d)
+    adopted = [c for c in checks
+               if c.name == "revenue items == Total Revenues" and c.vintage == "2026 adopted"]
+    assert adopted and adopted[0].status == "PASS", "2026 revenue ledger must reconcile exactly"
+    assert adopted[0].expected == 184640761, "printed Total Revenues = 184,640,761"
+    # the biggest line item is captured with provenance
+    sales = [ln for ln in d.lines if "Sales Tax" in ln.line_description and ln.fiscal_year == 2026]
+    assert sales and sales[0].amount == 108924164 and sales[0].source_page > 0
+
+
+def test_no_phantom_program_names(book):
+    """Requiring a Strategic Program Area heading removes the '(program on pN)'
+    fallback that used to mis-capture stray non-departmental tables."""
+    for d in book:
+        for p in d.programs:
+            assert not p.name.startswith("(program on"), f"phantom program in {d.label}: {p.name}"

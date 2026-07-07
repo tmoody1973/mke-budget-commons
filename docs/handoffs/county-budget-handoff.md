@@ -37,13 +37,23 @@ Canonical: `data/canonical/county/2026/adopted/county-operating-book.parquet` (3
    `list_departments`/`compare_years`/`biggest_changes`/`trace_adoption` gov-agnostic.
    `make mcp-test` covers county (asserts against printed figures); city smoke green.
 
+3. ✅ **Non-departmental ledgers now parsed & reconciled** — the 4 formerly
+   `NOT_RECONCILABLE` chapters are done. Revenue ledgers (Non-Departmental Revenues,
+   Property Taxes) capture every item line as a fact and reconcile items → Total
+   Revenues ($184.6M + $309.0M). The program-list chapters (Cultural Contributions,
+   Non-Departmental Expenditures) reconcile each program area's Expenditures −
+   Revenues = Tax Levy. **Whole book: 37/37 reconciled, 0 NOT_RECONCILABLE, 0 findings.**
+   Parser tags `chapter_kind` (`standard`/`revenue_ledger`/`nondept_programs`).
+
 **What's left (next session):**
-1. **Non-departmental ledgers (follow-up):** the 4 `NOT_RECONCILABLE` chapters
-   (Non-Departmental Revenues 190 / Expenditures 194, Cultural Contributions,
-   Property Taxes) carry revenue-ledger / rollup tables, not the standard
-   departmental summary. Their line items are **not yet emitted as facts** — add a
-   revenue-ledger table type (sum of items == Total Revenues) to capture them with
-   provenance rather than drop them.
+1. **Property-Taxes countywide crosswalk (deferred, high value):** `199` Property
+   Taxes p414 table 2 is a whole-county rollup — every department's Expenditures /
+   Revenue / Tax Levy with group subtotals and a grand total. It's an independent
+   cross-check: each row should match the department's own summary table we already
+   parsed (verified by hand: County Board 1,243,016 matches). Parsing it (grouped
+   subtotals, agency-number matching) would give a document-level reconciliation of
+   the entire county budget. Different table shape (header `Department|Fund Type|
+   Agency|Expenditures|Revenue|Tax Levy`), so it needs its own parse path.
 
 ---
 
