@@ -1,9 +1,53 @@
 # Handoff — Milwaukee County Operating & Capital Budgets
 
-**For:** the next session/agent picking up county parsing (L1).
-**Status:** city side is done (L1→L4 live). County is unbuilt. This doc is a
-grounded implementation spec — the structure below was **verified against the
-actual PDFs**, not just the PRD.
+**For:** the next session/agent picking up county parsing.
+**Status:** city side is done (L1→L4 live). **County operating L1 + L2-loader are now
+built and green** (see status box below). County capital is still deferred.
+This doc is a grounded implementation spec — the structure below was **verified
+against the actual PDFs**, not just the PRD.
+
+---
+
+## ✅ STATUS (updated) — County Operating P0 done at L1, wired at L2
+
+**Built and green:**
+- `parsers/county_operating.py` — `Agency No. NNN` chapter segmentation +
+  `extract_tables()`; emits canonical `BudgetLine` rows (`category`/`program`/`fte`,
+  `account=NULL`, all four vintages, `source_page` on every row).
+- `parsers/reconcile_county.py` — the five printed identities (components→Total
+  Expenditures; revenues→Total Revenues; Exp−Rev=Tax Levy; Variance=2026−2025;
+  program rollup). Budget/adopted must match **exactly**; prior-year **actual**
+  columns carry a bounded `ROUNDING` status (drift ≤ `(N+1)/2` for an N-addend sum,
+  surfaced, never swallowed).
+- `scripts/report_county_operating.py` → `docs/reconciliation-reports/county-2026-adopted-operating.md`.
+- `tests/test_reconcile_county_operating.py` — 8 tests; full suite 28 green.
+- `db/load.py` — county facts join the fact load; `load_reconciliation_county()`
+  writes county checks. `make parse-county-operating` runs parser+report.
+
+**Result:** 37 chapters, **37/37 dollar-reconciled**, 0 open findings.
+5 exact · 28 reconciled-with-actual-rounding · 4 non-standard (`NOT_RECONCILABLE`).
+Canonical: `data/canonical/county/2026/adopted/county-operating-book.parquet` (3,440 lines).
+
+**What's left (next session):**
+1. **Run `make load-neon`** — the loader is wired for county but has not been run
+   against live Neon (it rebuilds the disposable serving DB from repo Parquet).
+2. **MCP county branches (L3):** `get_department_budget` and `budget_breakdown` in
+   `mcp/src/index.ts` key off city reserved codes (`account='006000'` …). Add a
+   county branch that reads the **category rows** (`line_kind='category'`, names
+   `Personnel Costs`/`Operations Costs`/`Debt & Depreciation`/`Interdepartmental
+   Charges`/`Total Expenditures`/`Total Revenues`/`Tax Levy`) instead. Then smoke-
+   test with `gov:"county"`. `list_departments`/`compare_years`/`search_line_items`/
+   `reconciliation_status` should already work once facts load.
+3. **Non-departmental ledgers (follow-up):** the 4 `NOT_RECONCILABLE` chapters
+   (Non-Departmental Revenues 190 / Expenditures 194, Cultural Contributions,
+   Property Taxes) carry revenue-ledger / rollup tables, not the standard
+   departmental summary. Their line items are **not yet emitted as facts** — add a
+   revenue-ledger table type (sum of items == Total Revenues) to capture them with
+   provenance rather than drop them.
+
+---
+
+**Original spec (below) — kept for reference; Part 1 is now implemented.**
 
 **Golden rule (unchanged):** deterministic parsing only, no LLM ever reads the
 numbers; every canonical row cites `source_page`; reconciliation failures are
