@@ -22,7 +22,8 @@ RECOMMENDED = "recommended"
 
 # line_kind values
 POSITION = "position"        # a staff line with a pay range (city)
-EXPENDITURE = "expenditure"  # a coded operating line (city, has account code)
+EXPENDITURE = "expenditure"  # a coded operating line (city ledger, MPS xlsx)
+REVENUE = "revenue"          # a revenue line by source (MPS)
 CATEGORY = "category"        # a summary category (county Budget Summary row)
 PROGRAM = "program"          # a program-area summary (county)
 SUBTOTAL = "subtotal"
