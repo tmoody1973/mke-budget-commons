@@ -60,3 +60,55 @@ documents:
     text_layer: ocr             # Acrobat Paper Capture — NOT reconciliation-grade. Phase 5+.
     retrieved_on: 2026-07-07
     sha256: TODO
+
+  # --- Milwaukee Public Schools (gov=mps) — FY2026-27 Revised Proposed Budget ---
+  # The .xlsx line-item detail is the reconcilable core (structured, deterministic,
+  # no PDF/OCR). Reconciliation anchor: the 33,269 real expenditure line items
+  # (6–7 segment account codes) sum to $1,600,555,548 ≈ the published $1,600.6M
+  # total; 7 blank/2-segment memo rows carrying $3.51B are excluded (documented).
+  - doc_id: mps-2027-proposed-lineitem
+    gov: mps
+    fiscal_year: 2027
+    doc_type: proposed
+    doc_family: lineitem
+    file: data/raw/mps/mps-2027-proposed-line-item.xlsx
+    source_url: https://milwaukeepublic.ic-board.com/attachments/1108f1cc-085d-4796-9edb-2e8fb7bca812.xlsx
+    format: xlsx                # sheets: 'FY 27 PB Expenditures ' (33,303 rows), 'FY 27 Revenue' (182)
+    text_layer: structured      # spreadsheet — provenance is sheet + row, not page
+    retrieved_on: 2026-07-07
+    sha256: 2c4d78e51a4c907830b82fd500a8e3a809f0bb7654edff297167850cab778bc9
+
+  - doc_id: mps-2027-proposed-summary
+    gov: mps
+    fiscal_year: 2027
+    doc_type: proposed
+    doc_family: summary
+    file: data/raw/mps/mps-2027-proposed-summary.pdf
+    source_url: https://milwaukeepublic.ic-board.com/attachments/7291ea18-e210-4e6b-9a09-a285678cf60e.pdf
+    pages: 68
+    text_layer: native          # narrative/explainer volume (funds, formulas, staffing standards)
+    retrieved_on: 2026-07-07
+    sha256: 89400307b1eedb4f444cb33315157c224c8783506f855a48548241dd2a89590b
+
+  - doc_id: mps-2027-proposed-school-lineitem
+    gov: mps
+    fiscal_year: 2027
+    doc_type: proposed
+    doc_family: school-lineitem
+    file: data/raw/mps/mps-2027-proposed-school-line-item.pdf
+    source_url: https://milwaukeepublic.ic-board.com/attachments/f7353089-0ae8-467d-a655-61c4509783e4.pdf
+    pages: 5
+    text_layer: native
+    retrieved_on: 2026-07-07
+    sha256: 518a5b3723215631a881ad9d8772dc59434b1d2793a92b3b0898ff6ff636110f
+
+  - doc_id: mps-2027-proposed-supplement-schools
+    gov: mps
+    fiscal_year: 2027
+    doc_type: proposed
+    doc_family: school-supplement
+    file: data/raw/mps/mps-2027-proposed-supplement-schools.pdf
+    source_url: https://milwaukeepublic.ic-board.com/attachments/5dccdbe9-d1dd-4c23-b951-69a9c7975b02.pdf
+    text_layer: native
+    retrieved_on: 2026-07-07
+    sha256: cf9094032f5f6df195e79dff02fbb4fde118f49d535515f590b904192944d622

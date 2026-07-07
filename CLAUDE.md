@@ -58,6 +58,15 @@ Confirmed against the real PDF — don't re-derive, but DO derive column bands p
 - County facts load into `fact_budget_line` as `line_kind='category'|'program'`, `division`=program area, `account` NULL. Table-detection job, not band parsing.
 - **County Capital Budget is OCR (Acrobat Paper Capture)** — not reconciliation-grade without QA. Phase 5+, deferred.
 
+## Verified parsing facts (MPS FY2026-27 Revised Proposed Budget)
+
+- **A third species — a structured `.xlsx` line-item ledger, NOT a PDF.** The cleanest, most deterministic source of the three governments: parse with `pandas`/`openpyxl`, no pdfplumber, no OCR, no band-parsing. The summary/school PDFs are a formatted *view* of the same data; the `.xlsx` is the source of truth.
+- **Two sheets:** `FY 27 PB Expenditures ` (33,303 rows, note the trailing space in the sheet name) and `FY 27 Revenue` (182 rows). Columns include `Account Number`, `Location`, `Department/School`, `Project`, `Nature of Expenditure` (object), `Sch/Dept.` (306 units — schools **and** central offices in one column), `FTE`/`Amount` for **two vintages**: `FY26 FA` (prior, fall-adjusted) and `FY27 PB` (proposed).
+- **Account code is segmented** (`ADT-0-A-1A6-AO-EAUS` → object / ? / **fund** / project / location / object-detail). Split on `-`; **segment index 2 is the fund letter** (`I`,`0`,`V`,`S`,`A`,`B`,`U`,`P`,`4`).
+- **Reconciliation anchor (verified):** the **33,269 real line items (6–7 account segments) sum to $1,600,555,548 ≈ the published $1,600.6M total.** The **7 blank / 2-segment memo rows carrying $3.51B are NOT real line items** — exclude them explicitly and document it (never swallow). Revenue has the same pattern (blank-account memo rows + "DIST WIDE" rollups) and needs the same careful de-dup — do NOT assume the gross sum is the budget.
+- **Provenance for a spreadsheet = `source_doc` + sheet + 1-based row** (there is no page). Store the row number in `source_page`; the account number is the natural key. Every row still cites its origin — the inviolable rule holds.
+- Map to `fact_budget_line`: `gov='mps'`, `line_kind='expenditure'|'revenue'`, `fund`=fund letter, `org`=Location, `sbcl`=Project, `division`=Sch/Dept, `account`=full code, `line_description`=Nature of Expenditure, `units`=FTE, `amount_kind`: `FY27 PB`→`proposed`(FY2027) / `FY26 FA`→`budget`(FY2026). School-level queries key off `Sch/Dept.` codes (001–499 schools, 500+ central).
+
 ## Stack & conventions
 
 - Python 3.12, `pdfplumber` (coords) + `pypdf` (fallback text), `pandas`, `pyarrow`, `pytest`. Install with `pip install -r requirements.txt`.
@@ -84,5 +93,5 @@ make mcp-dev                                      # run the MCP server locally (
 - Don't hardcode column x-positions — derive from header words per page.
 - Don't hand-edit the Neon database — edit the pipeline, reload.
 - Don't ship a row without `source_page`.
-- Don't scope-creep into capital budgets, ACFR/actuals-monitoring, or MPS/MMSD/MATC. Operating budgets first. (Capital is Phase 5+, and the county capital doc is OCR anyway.)
+- **MPS is now in scope** (as of 2026-07-07) — a deliberate charter expansion. Milwaukee Public Schools is the **third government** (`gov='mps'`), FY2026-27 Revised Proposed Budget. Don't scope-creep into **MMSD/MATC** or into **capital budgets / ACFR actuals-monitoring**. County capital stays parked (it's OCR, not reconciliation-grade without a native-text source).
 - Don't swallow a reconciliation mismatch — flag it, disposition it, surface it.
