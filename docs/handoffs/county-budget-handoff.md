@@ -28,17 +28,17 @@ against the actual PDFs**, not just the PRD.
 5 exact · 28 reconciled-with-actual-rounding · 4 non-standard (`NOT_RECONCILABLE`).
 Canonical: `data/canonical/county/2026/adopted/county-operating-book.parquet` (3,440 lines).
 
+**Done since (L2 + L3 now live):**
+1. ✅ **`make load-neon` run** — Neon rebuilt from repo Parquet: 61 departments,
+   17,203 budget lines (3,440 county), 3,143 reconciliation checks. County recon:
+   746 pass · 64 rounding (stored `source_inconsistency`) · 4 not_reconcilable · 0 open.
+2. ✅ **MCP county branches (L3):** `get_department_budget` + `budget_breakdown` have
+   county branches reading the category rows; a unified `grandTotalPred` makes
+   `list_departments`/`compare_years`/`biggest_changes`/`trace_adoption` gov-agnostic.
+   `make mcp-test` covers county (asserts against printed figures); city smoke green.
+
 **What's left (next session):**
-1. **Run `make load-neon`** — the loader is wired for county but has not been run
-   against live Neon (it rebuilds the disposable serving DB from repo Parquet).
-2. **MCP county branches (L3):** `get_department_budget` and `budget_breakdown` in
-   `mcp/src/index.ts` key off city reserved codes (`account='006000'` …). Add a
-   county branch that reads the **category rows** (`line_kind='category'`, names
-   `Personnel Costs`/`Operations Costs`/`Debt & Depreciation`/`Interdepartmental
-   Charges`/`Total Expenditures`/`Total Revenues`/`Tax Levy`) instead. Then smoke-
-   test with `gov:"county"`. `list_departments`/`compare_years`/`search_line_items`/
-   `reconciliation_status` should already work once facts load.
-3. **Non-departmental ledgers (follow-up):** the 4 `NOT_RECONCILABLE` chapters
+1. **Non-departmental ledgers (follow-up):** the 4 `NOT_RECONCILABLE` chapters
    (Non-Departmental Revenues 190 / Expenditures 194, Cultural Contributions,
    Property Taxes) carry revenue-ledger / rollup tables, not the standard
    departmental summary. Their line items are **not yet emitted as facts** — add a
