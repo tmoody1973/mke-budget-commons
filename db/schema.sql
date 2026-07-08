@@ -80,6 +80,22 @@ CREATE TABLE IF NOT EXISTS reconciliation_result (
   PRIMARY KEY (doc_id, scope)
 );
 
+-- Layer-2 CONTEXT corpus (Wisconsin Policy Forum wisdom) lives in `context_chunk`.
+-- It is NOT part of this fact schema and is owned end-to-end by db/load-context.ts
+-- (a TS step that also generates the pgvector embeddings). db/load.py never drops
+-- or touches it — facts=Python, context=TS. The DDL, for reference:
+--
+--   CREATE EXTENSION IF NOT EXISTS vector;
+--   CREATE TABLE context_chunk (
+--     chunk_id TEXT PRIMARY KEY, source TEXT DEFAULT 'wpf',
+--     brief_id TEXT, brief_title TEXT, gov TEXT, year INT, page INT NOT NULL,
+--     section TEXT, text TEXT NOT NULL, source_url TEXT,
+--     embedding vector(384),
+--     search TSVECTOR GENERATED ALWAYS AS (to_tsvector('english', text)) STORED);
+--   CREATE INDEX ON context_chunk USING hnsw (embedding vector_cosine_ops);
+--
+-- WPF = attributed wisdom, never a fact source; context_chunk is prose, never reconciled.
+
 -- Per-school budget + enrollment (MPS), kept separate from the budget ledger so
 -- name-keyed school metrics don't collide with the code-keyed departments.
 CREATE TABLE IF NOT EXISTS fact_school (

@@ -197,6 +197,9 @@ def build() -> pd.DataFrame:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     df.to_csv(OUT_DIR / "chunks.csv", index=False)
     df.to_parquet(OUT_DIR / "chunks.parquet", index=False)
+    # JSONL: what the TS embed-load (db/load-context.ts) reads — robust to the
+    # commas/quotes in chunk text, no CSV parser needed in Node.
+    df.to_json(OUT_DIR / "chunks.jsonl", orient="records", lines=True, force_ascii=False)
     _write_report(df)
     return df
 
