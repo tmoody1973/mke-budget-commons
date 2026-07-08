@@ -32,6 +32,7 @@ parse-city-requested:
 parse-county-operating:
 	python -m parsers.county_operating
 	python -m scripts.report_county_operating
+	python -m scripts.report_county_taxlevy
 
 parse-mps:
 	python -m parsers.mps_lineitem

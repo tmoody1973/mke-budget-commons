@@ -29,6 +29,7 @@ from parsers.county_operating import (
     parse_book as parse_county_book,
 )
 from parsers.reconcile_county import reconcile_dept
+from parsers.reconcile_county_taxlevy import reconcile_taxlevy
 from parsers.mps_lineitem import (
     DEFAULT_XLSX as MPS_XLSX, DOC_ID as MPS_DOC_ID, parse_workbook as parse_mps_book,
 )
@@ -227,6 +228,26 @@ def load_reconciliation_county(cur) -> int:
     return len(rows)
 
 
+def load_reconciliation_county_taxlevy(cur) -> int:
+    """Countywide tax-levy crosswalk reconciliation (whole-budget cross-check)."""
+    rows, seen = [], set()
+    for c in reconcile_taxlevy():
+        scope = f"County tax-levy crosswalk | {c.name}"
+        key = (COUNTY_DOC_ID, scope)
+        if key in seen:
+            continue
+        seen.add(key)
+        rows.append((COUNTY_DOC_ID, scope, _clean(c.actual), _clean(c.expected),
+                     STATUS_MAP.get(c.status, "open"), c.disposition or None))
+    cur.executemany(
+        """INSERT INTO reconciliation_result
+           (doc_id, scope, extracted_total, printed_total, status, notes)
+           VALUES (%s,%s,%s,%s,%s,%s)""",
+        rows,
+    )
+    return len(rows)
+
+
 def load_reconciliation_mps(cur) -> int:
     """MPS reconciliation rows — anchored on the .xlsx printed grand totals."""
     rows, seen = [], set()
@@ -347,6 +368,7 @@ def main() -> None:
             n_facts = load_facts(cur, df)
             load_school_facts(cur)      # into fact_school, kept off the budget ledger
             n_recon = (load_reconciliation(cur) + load_reconciliation_county(cur)
+                       + load_reconciliation_county_taxlevy(cur)
                        + load_reconciliation_mps(cur) + load_reconciliation_mps_schools(cur))
             ro_url = ensure_readonly_role(cur, url)
         conn.commit()
