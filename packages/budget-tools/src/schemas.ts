@@ -11,3 +11,12 @@ export const traceAdoptionShape = { dept: z.string(), fiscal_year: z.number().in
 export const biggestChangesShape = { gov: gov().default("city"), year_a: z.number().int(), year_b: z.number().int(), measure: z.enum(["dollars", "percent"]).default("dollars"), direction: z.enum(["up", "down", "both"]).default("both"), limit: z.number().int().max(40).default(12) };
 export const getPositionsShape = { dept: z.string(), gov: gov().default("city"), fiscal_year: z.number().int().default(2026) };
 export const findPositionsShape = { query: z.string().optional(), gov: gov().default("city"), fiscal_year: z.number().int().default(2026), min_salary: z.number().optional(), flag: z.string().optional(), limit: z.number().int().max(50).default(25) };
+
+export const searchLineItemsShape = { query: z.string(), gov: gov().optional(), fiscal_year: z.number().int().optional(), limit: z.number().int().max(50).default(20) };
+export const citeShape = { line_id: z.number().int() };
+export const reconciliationStatusShape = { doc_id: z.string().optional() };
+export const glossaryShape = { term: z.string().optional() };
+export const runSqlShape = { query: z.string(), limit: z.number().int().max(1000).default(200) };
+export const compareSchoolsShape = { school_a: z.string(), school_b: z.string(), fiscal_year: z.number().int().default(2027) };
+export const mpsFundSummaryShape = { fiscal_year: z.number().int().default(2027) };
+export const perPupilRankingShape = { fiscal_year: z.number().int().default(2027), order: z.enum(["highest", "lowest"]).default("highest"), min_enrollment: z.number().int().default(0), limit: z.number().int().max(60).default(20) };
