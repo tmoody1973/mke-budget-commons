@@ -325,3 +325,27 @@ export type ReconciliationStatus = {
 export type GlossaryByKind = { count: number; by_kind: Record<string, GlossaryEntry[]> };
 export type GlossarySearch = { term: string; matches: GlossaryEntry[]; note?: string };
 export type GlossaryResult = GlossaryByKind | GlossarySearch;
+
+// --------------------------------------------------------------------------- //
+// context.ts — Layer-2 WPF context retrieval (SECONDARY commentary, not fact)
+// --------------------------------------------------------------------------- //
+
+/** One retrieved Wisconsin Policy Forum passage. Carries brief + page provenance;
+ *  it is qualitative wisdom to be attributed, NEVER a source of figures. */
+export type ContextPassage = {
+  text: string;
+  brief_id: string;
+  brief_title: string;
+  gov: Gov | null;
+  year: number | null;
+  page: number;
+  section: string | null;
+  source_url: string | null;
+  score: number;
+};
+
+export type ExplainResult = {
+  question: string;
+  passages: ContextPassage[];
+  note: string;
+};

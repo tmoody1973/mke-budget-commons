@@ -9,5 +9,7 @@ export * from "./queries/breakdown";
 export * from "./queries/compare";
 export * from "./queries/positions";
 export * from "./queries/schools";
+export * from "./queries/context";
+export * from "./embed";
 export * from "./schemas";
 export * from "./types";

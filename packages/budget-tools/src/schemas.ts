@@ -20,3 +20,5 @@ export const runSqlShape = { query: z.string(), limit: z.number().int().max(1000
 export const compareSchoolsShape = { school_a: z.string(), school_b: z.string(), fiscal_year: z.number().int().default(2027) };
 export const mpsFundSummaryShape = { fiscal_year: z.number().int().default(2027) };
 export const perPupilRankingShape = { fiscal_year: z.number().int().default(2027), order: z.enum(["highest", "lowest"]).default("highest"), min_enrollment: z.number().int().default(0), limit: z.number().int().max(60).default(20) };
+// Layer-2 WPF context retrieval — semantic, secondary commentary (never figures).
+export const explainShape = { question: z.string(), gov: gov().optional(), k: z.number().int().min(1).max(12).default(4) };
