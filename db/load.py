@@ -33,6 +33,11 @@ from parsers.mps_lineitem import (
     DEFAULT_XLSX as MPS_XLSX, DOC_ID as MPS_DOC_ID, parse_workbook as parse_mps_book,
 )
 from parsers.reconcile_mps import reconcile_book as reconcile_mps
+from parsers.mps_schools import (
+    DEFAULT_PDF as MPS_SCHOOL_PDF, DOC_ID as MPS_SCHOOL_DOC_ID,
+    parse_school_book,
+)
+from parsers.reconcile_mps_schools import reconcile_schools
 
 ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_SQL = ROOT / "db" / "schema.sql"
@@ -62,8 +67,17 @@ MPS_DOCS = [
      "xlsx": MPS_XLSX, "doc_id": MPS_DOC_ID},
 ]
 
+# MPS per-school budgets + enrollment (per-pupil). Facts + a cross-document
+# reconciliation against the .xlsx line items.
+MPS_SCHOOL_DOCS = [
+    {"parquet": ROOT / "data/canonical/mps/2027/proposed/mps-schools.parquet",
+     "pdf": MPS_SCHOOL_PDF, "doc_id": MPS_SCHOOL_DOC_ID},
+]
+
+SCHOOL_STATUS_MAP = {"PASS": "pass", "FAIL": "open", "UNMATCHED": "not_reconcilable"}
+
 DATA_TABLES = [
-    "reconciliation_result", "fact_amendment", "fact_budget_line",
+    "reconciliation_result", "fact_school", "fact_amendment", "fact_budget_line",
     "dept_alias", "dim_department", "dim_document", "dim_government",
 ]
 
@@ -234,6 +248,52 @@ def load_reconciliation_mps(cur) -> int:
     return len(rows)
 
 
+def load_school_facts(cur) -> int:
+    """Per-school budget + enrollment → fact_school (separate from the ledger)."""
+    rows = []
+    for doc in MPS_SCHOOL_DOCS:
+        book = parse_school_book(doc["pdf"])
+        for s in book.schools:
+            for fy, enr, amt, fte, pp in (
+                (2026, s.enr_actual_2026, s.amt_adopted_2026, s.fte_adopted_2026, s.per_pupil_2026),
+                (2027, s.enr_proj_2027, s.amt_proposed_2027, s.fte_proposed_2027, s.per_pupil_2027),
+            ):
+                if amt is None and enr is None:
+                    continue
+                rows.append((doc["doc_id"], s.name, fy, _clean(enr), _clean(amt),
+                             _clean(fte), _clean(pp), s.source_page))
+    cur.executemany(
+        """INSERT INTO fact_school
+           (doc_id, school_name, fiscal_year, enrollment, budget, fte, per_pupil, source_page)
+           VALUES (%s,%s,%s,%s,%s,%s,%s,%s)""",
+        rows,
+    )
+    return len(rows)
+
+
+def load_reconciliation_mps_schools(cur) -> int:
+    """Cross-document per-school reconciliation (school PDF vs district .xlsx)."""
+    rows, seen = [], set()
+    for doc in MPS_SCHOOL_DOCS:
+        book = parse_school_book(doc["pdf"])
+        for c in reconcile_schools(book):
+            scope = f"MPS school | {c.school}"
+            key = (doc["doc_id"], scope)
+            if key in seen:
+                continue
+            seen.add(key)
+            rows.append((doc["doc_id"], scope, _clean(c.pdf_amount), _clean(c.xlsx_amount),
+                         SCHOOL_STATUS_MAP.get(c.status, "open"),
+                         f"matched {c.matched_xlsx}" if c.matched_xlsx else "no name match in .xlsx"))
+    cur.executemany(
+        """INSERT INTO reconciliation_result
+           (doc_id, scope, extracted_total, printed_total, status, notes)
+           VALUES (%s,%s,%s,%s,%s,%s)""",
+        rows,
+    )
+    return len(rows)
+
+
 def ensure_readonly_role(cur, owner_url: str) -> str:
     """(Re)create SELECT-only role mcp_ro; return its connection URL (stable password)."""
     load_dotenv(ENV_PATH)
@@ -284,8 +344,9 @@ def main() -> None:
             load_documents(cur)
             load_departments(cur, df)
             n_facts = load_facts(cur, df)
+            load_school_facts(cur)      # into fact_school, kept off the budget ledger
             n_recon = (load_reconciliation(cur) + load_reconciliation_county(cur)
-                       + load_reconciliation_mps(cur))
+                       + load_reconciliation_mps(cur) + load_reconciliation_mps_schools(cur))
             ro_url = ensure_readonly_role(cur, url)
         conn.commit()
 

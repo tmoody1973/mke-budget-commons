@@ -815,6 +815,45 @@ server.registerTool(
   },
 );
 
+server.registerTool(
+  "per_pupil_ranking",
+  {
+    title: "Per-pupil spending ranking (MPS)",
+    description: "MPS schools ranked by per-pupil spending (budget ÷ enrollment) — the equity lens. FY2027 proposed. Cited. Optionally filter by min/max enrollment to exclude tiny specialty schools.",
+    inputSchema: {
+      fiscal_year: z.number().int().default(2027),
+      order: z.enum(["highest", "lowest"]).default("highest"),
+      min_enrollment: z.number().int().default(0),
+      limit: z.number().int().max(60).default(20),
+    },
+  },
+  async ({ fiscal_year, order, min_enrollment, limit }) => {
+    const fy = fiscal_year === 2026 ? 2026 : 2027;
+    const rows = await query(
+      `SELECT school_name school, enrollment, budget, fte, per_pupil, doc_id, source_page
+         FROM fact_school WHERE fiscal_year=$1 AND per_pupil IS NOT NULL`, [fy]);
+    const schools = rows
+      .map((r) => ({
+        school: r.school, enrollment: num(r.enrollment), budget: num(r.budget),
+        fte: num(r.fte), per_pupil: num(r.per_pupil),
+        doc_id: r.doc_id, source_page: r.source_page,
+      }))
+      .filter((s) => s.per_pupil != null && (s.enrollment ?? 0) >= min_enrollment);
+    schools.sort((a, b) => order === "highest" ? b.per_pupil! - a.per_pupil! : a.per_pupil! - b.per_pupil!);
+    const top = schools.slice(0, limit);
+    const ppVals = schools.map((s) => s.per_pupil!).sort((a, b) => a - b);
+    return ok({
+      fiscal_year: fy, order, min_enrollment, schools_ranked: schools.length,
+      district_median_per_pupil: ppVals.length ? ppVals[Math.floor(ppVals.length / 2)] : null,
+      results: top.map(({ doc_id, source_page, ...rest }) => rest),
+      citations: citations(top),
+      note: "Per pupil = school-controlled budget ÷ projected enrollment. Small specialty/"
+        + "alternative schools naturally sit high (tiny denominators) — use min_enrollment to "
+        + "focus on comprehensive schools. School budgets exclude central/districtwide costs.",
+    });
+  },
+);
+
 // Tools that need data not yet ingested — declared so agents see the roadmap.
 for (const [name, need] of [
   ["get_amendments", "the amendment (file/markup) documents"],

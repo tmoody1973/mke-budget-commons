@@ -36,6 +36,8 @@ parse-county-operating:
 parse-mps:
 	python -m parsers.mps_lineitem
 	python -m scripts.report_mps_lineitem
+	python -m parsers.mps_schools
+	python -m scripts.report_mps_schools
 
 reconcile:
 	pytest tests/ -v

@@ -74,7 +74,7 @@ The server exposes typed, read-only tools — every response carries `{doc_id, s
 | `glossary` | Plain-language explanations of budget codes, terms, and footnotes |
 | `run_sql` | Read-only (`SELECT`/`WITH`) SQL against the canonical store |
 
-**MPS (schools) tools** — for parents/students and journalists: `get_department_budget`/`budget_breakdown`/`compare_years` light up for `gov:"mps"` (a school's budget, spending by object, year-over-year), plus `compare_schools` (side-by-side school comparison) and `mps_fund_summary` (funds, revenue, and the planned surplus / fund-balance use).
+**MPS (schools) tools** — for parents/students and journalists: `get_department_budget`/`budget_breakdown`/`compare_years` light up for `gov:"mps"` (a school's budget, spending by object, year-over-year), plus `compare_schools` (side-by-side school comparison), `mps_fund_summary` (funds, revenue, and the planned surplus / fund-balance use), and **`per_pupil_ranking`** (schools ranked by budget ÷ enrollment — the equity lens, with a `min_enrollment` filter and district median).
 
 ## Project structure
 
