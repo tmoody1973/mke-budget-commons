@@ -9,8 +9,10 @@ const nextConfig: NextConfig = {
   },
   // @mke/budget-tools ships raw TypeScript (no build step) — transpile it here.
   transpilePackages: ["@mke/budget-tools"],
-  // pg is a Node driver with dynamic/native bits — keep it external to the bundler.
-  serverExternalPackages: ["pg"],
+  // Node/native packages with dynamic bits — keep them external to the bundler.
+  // transformers.js (WPF embeddings) pulls onnxruntime-node + sharp; server-only
+  // (the `explain` tool runs server-side), never in the client bundle.
+  serverExternalPackages: ["pg", "@huggingface/transformers", "onnxruntime-node", "sharp"],
 };
 
 export default nextConfig;

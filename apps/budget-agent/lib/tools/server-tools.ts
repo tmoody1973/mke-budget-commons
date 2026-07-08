@@ -70,6 +70,13 @@ export const serverTools = [
     execute: async (args) => safe("reconciliation_status", () => tools.reconciliationStatus(args)),
   }),
   defineTool({
+    name: "explain",
+    description:
+      "Wisconsin Policy Forum context: semantic search over the WPF budget briefs for qualitative wisdom, history, and framing — to ATTRIBUTE (brief + page), never as a source of numbers. Call this for why / what-does-this-mean / give-me-context questions. Every $/FTE/% must still come from a reconciled budget tool.",
+    parameters: z.object(tools.explainShape),
+    execute: async (args) => safe("explain", () => tools.explain(args)),
+  }),
+  defineTool({
     name: "glossary",
     description:
       "Plain-language explanations of budget codes, terms, footnotes, and vintages. Call with no term for the whole glossary.",

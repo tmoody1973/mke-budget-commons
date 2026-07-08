@@ -5,6 +5,7 @@ import { z } from "zod";
 import { BudgetBreakdownCard } from "@/components/generative/BudgetBreakdownCard";
 import { BiggestChangesCard } from "@/components/generative/BiggestChangesCard";
 import { DepartmentBudgetCard } from "@/components/generative/DepartmentBudgetCard";
+import { ContextCard } from "@/components/generative/ContextCard";
 
 // Friendly labels for the budget tools, shown as the copilot works.
 const TOOL_LABELS: Record<string, string> = {
@@ -16,6 +17,7 @@ const TOOL_LABELS: Record<string, string> = {
   reconciliation_status: "Checking reconciliation / findings",
   compare_years: "Comparing two fiscal years",
   per_pupil_ranking: "Ranking schools by per-pupil spending",
+  explain: "Reading Wisconsin Policy Forum context",
   glossary: "Looking up the glossary",
   run_sql: "Running a read-only SQL query",
   describe_schema: "Reading the database schema",
@@ -119,6 +121,22 @@ export function ToolRenderers() {
         if (isToolError(r)) return <ToolError name="get_department_budget" />;
         if (!r || typeof r !== "object") return <ToolChip name="get_department_budget" status="complete" />;
         return <DepartmentBudgetCard data={r} />;
+      },
+    },
+    [],
+  );
+
+  useRenderTool(
+    {
+      name: "explain",
+      parameters: anyParams,
+      render: (props: any) => {
+        const r = parseResult(props);
+        if (props.status !== "complete") return <ToolChip name="explain" status={props.status} />;
+        if (isToolError(r)) return <ToolError name="explain" />;
+        if (!r || !Array.isArray(r.passages) || r.passages.length === 0)
+          return <ToolChip name="explain" status="complete" />;
+        return <ContextCard data={r as never} />;
       },
     },
     [],
