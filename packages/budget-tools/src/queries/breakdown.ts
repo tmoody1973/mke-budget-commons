@@ -45,7 +45,7 @@ async function budgetBreakdownCounty(fiscal_year: number, dept?: string): Promis
       personnel: part(r.personnel), operations: part(r.operations),
       debt_and_depreciation: part(r.debt), interdepartmental_charges: part(r.interdept),
     },
-    citations: citations(prov),
+    citations: await citations(prov),
     note: "County expenditures by category (Personnel + Operations + Debt & Depreciation + "
       + "Interdepartmental = Total Expenditures). Countywide excludes the non-departmental "
       + "ledger chapters, which carry no category summary.",
@@ -86,7 +86,7 @@ async function budgetBreakdownMps(fiscal_year: number, dept?: string): Promise<M
     scope: `mps · ${label}`, fiscal_year, total: grand,
     people_costs: { salaries: part(sal), benefits: part(ben), other: part(grand - sal - ben) },
     top_objects: objects.map((r) => ({ object: r.object, ...part(r.amount) })),
-    citations: citations(prov),
+    citations: await citations(prov),
     note: "People costs are approximated from object-category names (salaries + benefits). "
       + "Top objects are the largest Nature-of-Expenditure categories.",
   };
@@ -141,7 +141,7 @@ export async function budgetBreakdown(a: { gov: Gov; fiscal_year?: number; dept?
       salaries: part(sal), fringe_benefits: part(fr), operating: part(op),
       equipment: part(eq), special_funds: part(grand - sal - fr - op - eq),
     },
-    citations: citations(prov),
+    citations: await citations(prov),
     note: "People costs = salaries + fringe. Special funds are grant/enterprise appropriations outside the four reserved categories.",
   };
 }

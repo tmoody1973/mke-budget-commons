@@ -21,7 +21,7 @@ export async function compareYears(a: { dept: string; year_a: number; year_b: nu
     department: cands[0].canonical_name,
     grand_total: line("grand"), net_salaries: line("net_salaries"),
     fringe: line("fringe"), operating: line("operating"), equipment: line("equipment"),
-    citations: citations([...A.cites, ...B.cites]),
+    citations: await citations([...A.cites, ...B.cites]),
   };
 }
 
@@ -49,7 +49,7 @@ export async function traceAdoption(a: { dept: string; fiscal_year: number; gov:
   return {
     department: cands[0].canonical_name, fiscal_year, stages,
     note: stages.length <= 1 ? "Only one budget stage is loaded for this year so far." : undefined,
-    citations: citations(present),
+    citations: await citations(present),
   };
 }
 
@@ -90,6 +90,6 @@ export async function biggestChanges(a: {
   return {
     gov, comparing: `fy${year_a} → fy${year_b}`, measure, direction,
     results: top.map(({ doc_id, source_page, ...rest }) => rest),
-    citations: citations(top),
+    citations: await citations(top),
   };
 }

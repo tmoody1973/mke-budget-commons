@@ -41,7 +41,7 @@ export async function searchLineItems(a: { query: string; gov?: Gov; fiscal_year
       line_id: Number(r.line_id), department: r.dept, division: r.division, description: r.line_description,
       kind: r.line_kind, pay_range: r.pay_range, amount: num(r.amount), account: r.account, page: r.source_page,
     })),
-    citations: citations(rows),
+    citations: await citations(rows),
   };
 }
 
