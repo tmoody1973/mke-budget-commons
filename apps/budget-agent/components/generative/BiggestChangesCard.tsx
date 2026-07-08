@@ -33,7 +33,7 @@ export function BiggestChangesCard({ data }: { data: BiggestChanges }) {
   const citations = (data.citations ?? []) as CitationRef[];
 
   return (
-    <div className="my-2 w-full rounded-xl border border-default-200 bg-content1 p-3 shadow-sm">
+    <div className="my-2 w-full rounded-xl border border-default-200 bg-content1 p-3 shadow-sm" data-testid="cited-card">
       <div className="mb-2">
         <h3 className="text-sm font-semibold text-foreground">Biggest changes — {data.gov}</h3>
         <p className="text-xs text-default-500">

@@ -29,16 +29,23 @@ export default async function Home({
   const gov: Gov = govParam === "county" || govParam === "mps" ? govParam : "city";
   const [yearA, yearB] = YEARS[gov];
 
-  const [changes, breakdown, recon] = await Promise.all([
+  // Degrade per-panel: a DB/query failure yields a friendly empty state, never a
+  // 500 or a stack trace. The trust promise holds — a failed panel shows no number.
+  const settled = await Promise.allSettled([
     biggestChanges({ gov, year_a: yearA, year_b: yearB, measure: "dollars", direction: "both", limit: 12 }),
     budgetBreakdown({ gov, fiscal_year: yearB }),
     reconciliationStatus({}),
   ]);
+  const value = <T,>(r: PromiseSettledResult<T>): T | null => (r.status === "fulfilled" ? r.value : null);
+  const changes = value(settled[0]);
+  const breakdown = value(settled[1]);
+  const recon = value(settled[2]) ?? {};
+  const dataError = settled.some((r) => r.status === "rejected");
 
   const breakdownTotal =
-    "total" in breakdown
+    breakdown && "total" in breakdown
       ? breakdown.total
-      : "total_expenditures" in breakdown
+      : breakdown && "total_expenditures" in breakdown
         ? (breakdown as { total_expenditures: number }).total_expenditures
         : null;
 
@@ -49,6 +56,13 @@ export default async function Home({
         <p className="text-sm text-default-500">Reconciled, cited budget data · ask the copilot to dig deeper →</p>
       </div>
 
+      {dataError && (
+        <div className="mb-4 rounded-xl border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-700">
+          Some budget data couldn&apos;t be loaded right now. The figures below are limited to what loaded — nothing is
+          estimated. Try refreshing, or ask the copilot.
+        </div>
+      )}
+
       <TrustBar recon={recon} breakdownTotal={breakdownTotal} govLabel={gov} yearB={yearB} />
 
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -56,7 +70,7 @@ export default async function Home({
           <h2 className="mb-2 text-base font-semibold text-foreground">
             Biggest changes · FY{yearA} → FY{yearB}
           </h2>
-          {"results" in changes ? (
+          {changes && "results" in changes ? (
             <BiggestChangesCard data={changes} />
           ) : (
             <p className="p-3 text-sm text-default-500">No comparison data for {gov}.</p>
@@ -65,7 +79,7 @@ export default async function Home({
 
         <section className="rounded-2xl border border-default-200 bg-content1 p-4">
           <h2 className="mb-2 text-base font-semibold text-foreground">Where the money goes · FY{yearB}</h2>
-          {"breakdown" in breakdown || "people_costs" in breakdown ? (
+          {breakdown && ("breakdown" in breakdown || "people_costs" in breakdown) ? (
             <BudgetBreakdownCard data={breakdown} />
           ) : (
             <p className="p-3 text-sm text-default-500">No breakdown available for {gov}.</p>

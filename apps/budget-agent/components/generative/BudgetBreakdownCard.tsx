@@ -57,7 +57,7 @@ export function BudgetBreakdownCard({ data }: { data: BudgetBreakdown }) {
   const citations = (data as { citations?: CitationRef[] }).citations ?? [];
 
   return (
-    <div className="my-2 w-full rounded-xl border border-default-200 bg-content1 p-3 shadow-sm">
+    <div className="my-2 w-full rounded-xl border border-default-200 bg-content1 p-3 shadow-sm" data-testid="cited-card">
       <div className="mb-2">
         <h3 className="text-sm font-semibold text-foreground">Where the money goes — {data.scope}</h3>
         <p className="text-xs text-default-500">

@@ -34,7 +34,7 @@ export function TrustBar({
   const pct = totalChecks ? Math.round((pass / totalChecks) * 100) : null;
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3" data-testid="trust-bar">
       <Stat
         label="Budget total"
         value={breakdownTotal != null ? usd(breakdownTotal) : "—"}

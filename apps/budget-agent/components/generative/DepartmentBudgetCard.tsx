@@ -52,7 +52,7 @@ export function DepartmentBudgetCard({ data }: { data: any }) {
   const isMps = data?.total != null && Array.isArray(data?.top_spending_by_object);
 
   return (
-    <div className="my-2 w-full rounded-xl border border-default-200 bg-content1 p-3 shadow-sm">
+    <div className="my-2 w-full rounded-xl border border-default-200 bg-content1 p-3 shadow-sm" data-testid="cited-card">
       <div className="mb-2">
         <h3 className="text-sm font-semibold text-foreground">{name}</h3>
         {subtitle && <p className="text-xs capitalize text-default-500">{subtitle}</p>}
