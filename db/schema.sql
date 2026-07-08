@@ -79,3 +79,17 @@ CREATE TABLE IF NOT EXISTS reconciliation_result (
   notes           TEXT,
   PRIMARY KEY (doc_id, scope)
 );
+
+-- Per-school budget + enrollment (MPS), kept separate from the budget ledger so
+-- name-keyed school metrics don't collide with the code-keyed departments.
+CREATE TABLE IF NOT EXISTS fact_school (
+  doc_id      TEXT REFERENCES dim_document,
+  school_name TEXT NOT NULL,
+  fiscal_year INT  NOT NULL,
+  enrollment  NUMERIC(10,2),
+  budget      NUMERIC(14,2),
+  fte         NUMERIC(10,2),
+  per_pupil   NUMERIC(12,2),
+  source_page INT  NOT NULL,
+  PRIMARY KEY (doc_id, school_name, fiscal_year)
+);

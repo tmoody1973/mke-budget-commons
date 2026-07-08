@@ -65,6 +65,22 @@ assert(sr.hits > 0, "search_line_items works for MPS");
 const bc = await call("biggest_changes", { gov: "mps", year_a: 2026, year_b: 2027, limit: 5 });
 assert(bc.results.length > 0, "biggest_changes works for MPS");
 
+// 8. per_pupil_ranking — the equity lens (from the per-school dataset)
+const pp = await call("per_pupil_ranking", { order: "highest", limit: 5 });
+console.log("  schools ranked:", pp.schools_ranked, "| median $/pupil:", pp.district_median_per_pupil, "| top:", pp.results[0]);
+assert(pp.schools_ranked >= 120, "per_pupil_ranking covers the schools");
+assert(pp.results.every((s) => s.per_pupil > 0 && s.enrollment > 0), "each ranked school has per-pupil + enrollment");
+assert(pp.district_median_per_pupil > 5000 && pp.district_median_per_pupil < 40000, "median per-pupil is plausible");
+assert(pp.results[0].per_pupil >= pp.results[pp.results.length - 1].per_pupil, "highest order is descending");
+// min_enrollment filter excludes tiny specialty schools
+const ppBig = await call("per_pupil_ranking", { order: "highest", min_enrollment: 300, limit: 5 });
+assert(ppBig.results.every((s) => s.enrollment >= 300), "min_enrollment filter works");
+
+// 9. list_departments(mps) is NOT polluted by the school-name entries
+const ld2 = await call("list_departments", { gov: "mps" });
+const ldSum2 = ld2.departments.reduce((s, d) => s + (d.total || 0), 0);
+assert(Math.abs(ldSum2 - 1600555548) < 1, "list_departments still sums to the district total (schools excluded)");
+
 await client.close();
 console.log("\n✅ MPS smoke test passed");
 process.exit(0);
