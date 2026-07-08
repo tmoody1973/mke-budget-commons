@@ -1,21 +1,82 @@
-import { Card } from "@heroui/react";
+import { biggestChanges, budgetBreakdown, reconciliationStatus } from "@mke/budget-tools";
+import { BiggestChangesCard } from "@/components/generative/BiggestChangesCard";
+import { BudgetBreakdownCard } from "@/components/generative/BudgetBreakdownCard";
+import { TrustBar } from "@/components/dashboard/TrustBar";
+import { GovYearSelectors, type Gov } from "@/components/dashboard/GovYearSelectors";
 
-export default function Home() {
+// The dashboard is a server component: it queries @mke/budget-tools directly
+// (server-only, read-only, cited) and passes plain JSON results to the client cards.
+export const dynamic = "force-dynamic";
+
+const YEARS: Record<Gov, [number, number]> = {
+  city: [2025, 2026],
+  county: [2025, 2026],
+  mps: [2026, 2027],
+};
+
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ gov?: string }>;
+}) {
+  const { gov: govParam } = await searchParams;
+  const gov: Gov = govParam === "county" || govParam === "mps" ? govParam : "city";
+  const [yearA, yearB] = YEARS[gov];
+
+  const [changes, breakdown, recon] = await Promise.all([
+    biggestChanges({ gov, year_a: yearA, year_b: yearB, measure: "dollars", direction: "both", limit: 12 }),
+    budgetBreakdown({ gov, fiscal_year: yearB }),
+    reconciliationStatus({}),
+  ]);
+
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-background p-8">
-      <Card className="w-full max-w-xl">
-        <Card.Header>
-          <Card.Title>Milwaukee Budget — Journalist</Card.Title>
-          <Card.Description>
-            Reconciled City &amp; County budget data, agent access layer.
-          </Card.Description>
-        </Card.Header>
-        <Card.Content>
-          <p className="text-sm text-muted">
-            Scaffold running. No live data wired up yet.
-          </p>
-        </Card.Content>
-      </Card>
-    </div>
+    <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+      <header className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Milwaukee Budget — Journalist</h1>
+          <p className="text-sm text-default-500">Reconciled, cited budget data · ask the copilot to dig in →</p>
+        </div>
+        <GovYearSelectors gov={gov} />
+      </header>
+
+      <TrustBar
+        recon={recon}
+        breakdownTotal={
+          "total" in breakdown
+            ? breakdown.total
+            : "total_expenditures" in breakdown
+              ? (breakdown as { total_expenditures: number }).total_expenditures
+              : null
+        }
+        govLabel={gov}
+        yearB={yearB}
+      />
+
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <section className="rounded-2xl border border-default-200 bg-content1 p-3">
+          <h2 className="mb-1 px-1 text-sm font-semibold text-foreground">
+            Biggest changes · FY{yearA} → FY{yearB}
+          </h2>
+          {"results" in changes ? (
+            <BiggestChangesCard data={changes} />
+          ) : (
+            <p className="p-3 text-sm text-default-500">No comparison data for {gov}.</p>
+          )}
+        </section>
+
+        <section className="rounded-2xl border border-default-200 bg-content1 p-3">
+          <h2 className="mb-1 px-1 text-sm font-semibold text-foreground">Where the money goes · FY{yearB}</h2>
+          {"breakdown" in breakdown || "people_costs" in breakdown ? (
+            <BudgetBreakdownCard data={breakdown} />
+          ) : (
+            <p className="p-3 text-sm text-default-500">No breakdown available for {gov}.</p>
+          )}
+        </section>
+      </div>
+
+      <p className="mt-6 text-center text-xs text-default-400">
+        Every figure is sourced to a document page. The copilot never computes numbers — it reads the reconciled data.
+      </p>
+    </main>
   );
 }

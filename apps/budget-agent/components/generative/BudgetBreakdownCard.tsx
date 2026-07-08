@@ -9,8 +9,8 @@ type Row = { label: string; amount: number; pct: number };
 // Brand-neutral categorical palette (swap for the project's brand later).
 const COLORS = ["#2563eb", "#0891b2", "#7c3aed", "#d97706", "#64748b", "#db2777", "#059669"];
 
-const usd = (n: number) =>
-  n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+const usd = (n: number | null | undefined) =>
+  n == null ? "—" : n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 const usdCompact = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1 });
 
@@ -51,7 +51,9 @@ function toRows(data: BudgetBreakdown): Row[] {
 
 export function BudgetBreakdownCard({ data }: { data: BudgetBreakdown }) {
   const rows = toRows(data);
-  const total = data.total;
+  // City/MPS use `total`; county uses `total_expenditures`.
+  const total =
+    (data as { total?: number }).total ?? (data as { total_expenditures?: number }).total_expenditures ?? null;
   const citations = (data as { citations?: CitationRef[] }).citations ?? [];
 
   return (
