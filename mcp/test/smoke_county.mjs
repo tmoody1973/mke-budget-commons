@@ -23,7 +23,7 @@ function assert(cond, msg) {
 const ld = await call("list_departments", { gov: "county" });
 console.log(`  ${ld.departments.length} county depts; top:`, ld.departments[0]);
 assert(ld.departments.length >= 30, "county departments listed");
-assert(ld.departments.some((d) => d.adopted_total > 0), "county depts carry adopted totals");
+assert(ld.departments.some((d) => d.total > 0), "county depts carry adopted totals");
 
 // 2. get_department_budget county — County Board (no revenues, tax-levy-only)
 const cb = await call("get_department_budget", { dept: "County Board", gov: "county" });

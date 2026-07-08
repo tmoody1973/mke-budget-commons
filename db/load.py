@@ -29,6 +29,10 @@ from parsers.county_operating import (
     parse_book as parse_county_book,
 )
 from parsers.reconcile_county import reconcile_dept
+from parsers.mps_lineitem import (
+    DEFAULT_XLSX as MPS_XLSX, DOC_ID as MPS_DOC_ID, parse_workbook as parse_mps_book,
+)
+from parsers.reconcile_mps import reconcile_book as reconcile_mps
 
 ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_SQL = ROOT / "db" / "schema.sql"
@@ -51,6 +55,13 @@ COUNTY_DOCS = [
      "pages": (COUNTY_BOOK_START, COUNTY_BOOK_END)},
 ]
 
+# MPS docs: a structured .xlsx (parse_mps_book → reconcile_book). Facts + its own
+# reconciliation path anchored on the spreadsheet's printed grand totals.
+MPS_DOCS = [
+    {"parquet": ROOT / "data/canonical/mps/2027/proposed/mps-lineitem-book.parquet",
+     "xlsx": MPS_XLSX, "doc_id": MPS_DOC_ID},
+]
+
 DATA_TABLES = [
     "reconciliation_result", "fact_amendment", "fact_budget_line",
     "dept_alias", "dim_department", "dim_document", "dim_government",
@@ -62,6 +73,7 @@ STATUS_MAP = {
     "ROUNDING": "source_inconsistency",  # documented prior-year-actual rounding (county)
     "SOURCE_INCONSISTENCY": "source_inconsistency",
     "NOT_RECONCILABLE": "not_reconcilable",
+    "INFO": "info",                      # informational reconciling item (MPS surplus)
 }
 
 
@@ -88,7 +100,8 @@ def rebuild_schema(cur) -> None:
 def load_governments(cur) -> None:
     cur.executemany(
         "INSERT INTO dim_government (gov_id, name) VALUES (%s, %s)",
-        [("city", "City of Milwaukee"), ("county", "Milwaukee County")],
+        [("city", "City of Milwaukee"), ("county", "Milwaukee County"),
+         ("mps", "Milwaukee Public Schools")],
     )
 
 
@@ -199,6 +212,28 @@ def load_reconciliation_county(cur) -> int:
     return len(rows)
 
 
+def load_reconciliation_mps(cur) -> int:
+    """MPS reconciliation rows — anchored on the .xlsx printed grand totals."""
+    rows, seen = [], set()
+    for doc in MPS_DOCS:
+        book = parse_mps_book(doc["xlsx"])
+        for c in reconcile_mps(book):
+            scope = f"MPS | {c.name} | {c.vintage}"
+            key = (doc["doc_id"], scope)
+            if key in seen:
+                continue
+            seen.add(key)
+            rows.append((doc["doc_id"], scope, _clean(c.actual), _clean(c.expected),
+                         STATUS_MAP.get(c.status, "open"), c.disposition or None))
+    cur.executemany(
+        """INSERT INTO reconciliation_result
+           (doc_id, scope, extracted_total, printed_total, status, notes)
+           VALUES (%s,%s,%s,%s,%s,%s)""",
+        rows,
+    )
+    return len(rows)
+
+
 def ensure_readonly_role(cur, owner_url: str) -> str:
     """(Re)create SELECT-only role mcp_ro; return its connection URL (stable password)."""
     load_dotenv(ENV_PATH)
@@ -237,7 +272,8 @@ def main() -> None:
         raise SystemExit("DATABASE_URL not set (see .env)")
     df = pd.concat(
         [pd.read_parquet(d["parquet"]) for d in DOCS]
-        + [pd.read_parquet(d["parquet"]) for d in COUNTY_DOCS],
+        + [pd.read_parquet(d["parquet"]) for d in COUNTY_DOCS]
+        + [pd.read_parquet(d["parquet"]) for d in MPS_DOCS],
         ignore_index=True,
     )
 
@@ -248,7 +284,8 @@ def main() -> None:
             load_documents(cur)
             load_departments(cur, df)
             n_facts = load_facts(cur, df)
-            n_recon = load_reconciliation(cur) + load_reconciliation_county(cur)
+            n_recon = (load_reconciliation(cur) + load_reconciliation_county(cur)
+                       + load_reconciliation_mps(cur))
             ro_url = ensure_readonly_role(cur, url)
         conn.commit()
 
