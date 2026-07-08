@@ -66,11 +66,11 @@ export function BudgetBreakdownCard({ data }: { data: BudgetBreakdown }) {
       </div>
 
       {/* Chart */}
-      <div className="h-[210px] w-full" data-figure="breakdown-chart">
+      <div className="w-full" style={{ height: Math.max(200, rows.length * 46) }} data-figure="breakdown-chart">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={rows} layout="vertical" margin={{ top: 0, right: 12, bottom: 0, left: 0 }}>
-            <XAxis type="number" tickFormatter={(v) => usdCompact(Number(v))} tick={{ fontSize: 10 }} stroke="#94a3b8" />
-            <YAxis type="category" dataKey="label" width={110} tick={{ fontSize: 10 }} stroke="#94a3b8" />
+            <XAxis type="number" tickFormatter={(v) => usdCompact(Number(v))} tick={{ fontSize: 11 }} stroke="#94a3b8" />
+            <YAxis type="category" dataKey="label" width={120} tick={{ fontSize: 11 }} stroke="#94a3b8" />
             <Tooltip
               formatter={(v) => usd(Number(v))}
               contentStyle={{ fontSize: 12, borderRadius: 8 }}
