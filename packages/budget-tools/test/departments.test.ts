@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { listDepartments, getDepartmentBudget, budgetBreakdown } from "../src/index.js";
+import { listDepartments, getDepartmentBudget, budgetBreakdown, isAmbiguous } from "../src/index.js";
+import type { CityDeptBudget, CityBreakdown } from "../src/index.js";
 
 test("listDepartments(city) returns cited, totaled departments", async () => {
   const r = await listDepartments({ gov: "city" });
@@ -14,13 +15,17 @@ test("getDepartmentBudget throws on an unknown department", async () => {
 });
 
 test("getDepartmentBudget(Fire) returns reserved-code totals + citations", async () => {
-  const r = await getDepartmentBudget({ dept: "Fire Department", gov: "city" });
+  const raw = await getDepartmentBudget({ dept: "Fire Department", gov: "city" });
+  assert.ok(!isAmbiguous(raw), "Fire Department is unambiguous");
+  const r = raw as CityDeptBudget;
   assert.ok(r.citations.length > 0, "must carry provenance");
-  assert.ok(r.totals.grand_total > 0);
+  assert.ok((r.totals.grand_total ?? 0) > 0);
 });
 
 test("budgetBreakdown(city) sums to ~100% and carries a total", async () => {
-  const r = await budgetBreakdown({ gov: "city" });
+  const raw = await budgetBreakdown({ gov: "city" });
+  assert.ok(!isAmbiguous(raw), "citywide breakdown is unambiguous");
+  const r = raw as CityBreakdown;
   assert.ok(r.total > 0);
   const pcts = Object.values(r.breakdown).map((x: any) => x.pct);
   const sum = pcts.reduce((s, p) => s + p, 0);
@@ -29,6 +34,7 @@ test("budgetBreakdown(city) sums to ~100% and carries a total", async () => {
 
 test("getDepartmentBudget returns {ambiguous, candidates} for a multi-match name (does not throw)", async () => {
   const r = await getDepartmentBudget({ dept: "commission", gov: "city" });
+  assert.ok(isAmbiguous(r), "expected the ambiguous-candidates branch");
   assert.equal(r.ambiguous, true);
   assert.ok(Array.isArray(r.candidates) && r.candidates.length >= 2, "should return >=2 candidates");
   assert.ok(r.candidates.every((c: any) => c.dept_id && c.canonical_name), "candidates carry dept_id + canonical_name");

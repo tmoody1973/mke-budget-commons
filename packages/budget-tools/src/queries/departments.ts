@@ -1,8 +1,9 @@
 import { query } from "../db.js";
 import { citations, num } from "../citation.js";
 import { resolveDept, VINTAGE, grandTotalPred, type Gov } from "../helpers.js";
+import type { Ambiguous, DepartmentList, CityDeptBudget, CountyDeptBudget, MpsSchoolBudget } from "../types.js";
 
-export async function listDepartments(a: { gov: Gov; fiscal_year?: number }) {
+export async function listDepartments(a: { gov: Gov; fiscal_year?: number }): Promise<DepartmentList> {
   const { gov, fiscal_year } = a;
   // City/county: MAX over a printed department total (a summary unit already
   // equals the sum of its divisions). MPS: no printed per-school total exists,
@@ -33,7 +34,7 @@ export async function listDepartments(a: { gov: Gov; fiscal_year?: number }) {
   };
 }
 
-export async function getDepartmentBudget(a: { dept: string; gov: Gov; fiscal_year?: number; doc_type?: string }): Promise<any> {
+export async function getDepartmentBudget(a: { dept: string; gov: Gov; fiscal_year?: number; doc_type?: string }): Promise<CityDeptBudget | CountyDeptBudget | MpsSchoolBudget | Ambiguous> {
   const { dept, gov, fiscal_year, doc_type } = a;
   const cands = await resolveDept(gov, dept);
   if (cands.length === 0) throw new Error(`No department matches "${dept}".`);
@@ -95,7 +96,7 @@ export async function getDepartmentBudget(a: { dept: string; gov: Gov; fiscal_ye
 
 // MPS school/office budget: a set of line items (no printed per-school total),
 // summed and broken down by object category and fund. FY2027 proposed default.
-async function mpsSchoolBudget(cand: { dept_id: string; canonical_name: string }, fiscal_year: number) {
+async function mpsSchoolBudget(cand: { dept_id: string; canonical_name: string }, fiscal_year: number): Promise<MpsSchoolBudget> {
   const [tot] = await query(
     `SELECT SUM(amount) total, SUM(units) fte, COUNT(*) lines
        FROM fact_budget_line
@@ -131,7 +132,7 @@ async function mpsSchoolBudget(cand: { dept_id: string; canonical_name: string }
 // County department budget: category rollups keyed by fiscal_year (each county
 // fiscal year maps to exactly one printed column). No per-position ledger — only
 // an FTE count. Provenance from the same category rows.
-async function countyDeptBudget(cand: { dept_id: string; canonical_name: string }, fiscal_year: number) {
+async function countyDeptBudget(cand: { dept_id: string; canonical_name: string }, fiscal_year: number): Promise<CountyDeptBudget> {
   const [agg] = await query(
     `SELECT
        MAX(amount) FILTER (WHERE line_description='Personnel Costs') AS personnel,

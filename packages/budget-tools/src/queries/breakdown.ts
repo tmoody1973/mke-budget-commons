@@ -1,13 +1,14 @@
 import { query } from "../db.js";
 import { num } from "../citation.js";
 import { resolveDept, grandTotalPred, ROLLUP_EXCLUDE, type Gov } from "../helpers.js";
+import type { Ambiguous, CityBreakdown, CountyBreakdown, MpsBreakdown } from "../types.js";
 
 // County "where the money goes": the category breakdown (Personnel + Operations
 // + Debt & Depreciation + Interdepartmental = Total Expenditures), per department
 // or countywide. Reads category rows (line_kind='category'), so program rows and
 // the non-departmental ledger chapters (no category summary) are excluded — the
 // countywide figure is the sum of standard department chapters.
-async function budgetBreakdownCounty(fiscal_year: number, dept?: string) {
+async function budgetBreakdownCounty(fiscal_year: number, dept?: string): Promise<CountyBreakdown | Ambiguous> {
   let where = "d.gov_id='county' AND f.fiscal_year=$1 AND f.line_kind='category'";
   const params: any[] = [fiscal_year];
   let label = "county departments";
@@ -49,7 +50,7 @@ async function budgetBreakdownCounty(fiscal_year: number, dept?: string) {
 
 // MPS "where the money goes": by object category (Nature of Expenditure), plus a
 // people-costs rollup (salaries + benefits), district-wide or for one school/office.
-async function budgetBreakdownMps(fiscal_year: number, dept?: string) {
+async function budgetBreakdownMps(fiscal_year: number, dept?: string): Promise<MpsBreakdown | Ambiguous> {
   let where = "d.gov_id='mps' AND f.line_kind='expenditure' AND f.fiscal_year=$1";
   const params: any[] = [fiscal_year];
   let label = "district-wide";
@@ -83,7 +84,7 @@ async function budgetBreakdownMps(fiscal_year: number, dept?: string) {
   };
 }
 
-export async function budgetBreakdown(a: { gov: Gov; fiscal_year?: number; dept?: string }): Promise<any> {
+export async function budgetBreakdown(a: { gov: Gov; fiscal_year?: number; dept?: string }): Promise<CityBreakdown | CountyBreakdown | MpsBreakdown | Ambiguous> {
   const { gov, dept } = a;
   const fy = a.fiscal_year ?? (gov === "mps" ? 2027 : 2026);
   if (gov === "county") return budgetBreakdownCounty(fy, dept);
