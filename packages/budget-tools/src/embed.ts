@@ -5,8 +5,12 @@
 //
 // Model: BAAI bge-small-en-v1.5 (ONNX, 384-dim). bge retrieval wants an
 // instruction prefix on the QUERY only; passages are embedded bare.
-import { pipeline } from "@huggingface/transformers";
-
+//
+// transformers.js (+ the onnxruntime-node native addon) is imported LAZILY, inside
+// getExtractor() — so merely importing this module (e.g. via the @mke/budget-tools
+// barrel) does NOT load the native stack. It loads only when we actually embed.
+// This keeps the heavy/native dependency dormant wherever `explain` isn't used
+// (e.g. a serverless deploy with WPF retrieval feature-flagged off).
 const MODEL = "Xenova/bge-small-en-v1.5";
 const QUERY_PREFIX = "Represent this sentence for searching relevant passages: ";
 
@@ -16,7 +20,11 @@ export const EMBED_DIM = 384;
 // Lazily built once, then reused (the model download + init is the expensive part).
 let _extractor: Promise<unknown> | null = null;
 function getExtractor(): Promise<unknown> {
-  if (!_extractor) _extractor = pipeline("feature-extraction", MODEL);
+  if (!_extractor) {
+    _extractor = import("@huggingface/transformers").then(({ pipeline }) =>
+      pipeline("feature-extraction", MODEL),
+    );
+  }
   return _extractor;
 }
 

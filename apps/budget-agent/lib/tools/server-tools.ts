@@ -3,6 +3,12 @@ import { defineTool } from "@copilotkit/runtime/v2";
 import { z } from "zod";
 import * as tools from "@mke/budget-tools";
 
+// WPF semantic retrieval (`explain`) needs the local embedding model. It's OFF by
+// default (fail-safe) and enabled only where the model can run — set
+// WPF_EXPLAIN_ENABLED=true (local dev has it). In a serverless deploy without it,
+// the tool simply isn't offered to the model, so transformers.js never loads.
+const WPF_EXPLAIN_ENABLED = process.env.WPF_EXPLAIN_ENABLED === "true";
+
 /**
  * Run a query function, converting any thrown error into a structured, friendly
  * result the model can relay — never a raw pg/stack trace, and never a number.
@@ -69,13 +75,17 @@ export const serverTools = [
     parameters: z.object(tools.reconciliationStatusShape),
     execute: async (args) => safe("reconciliation_status", () => tools.reconciliationStatus(args)),
   }),
-  defineTool({
-    name: "explain",
-    description:
-      "Wisconsin Policy Forum context: semantic search over the WPF budget briefs for qualitative wisdom, history, and framing — to ATTRIBUTE (brief + page), never as a source of numbers. Call this for why / what-does-this-mean / give-me-context questions. Every $/FTE/% must still come from a reconciled budget tool.",
-    parameters: z.object(tools.explainShape),
-    execute: async (args) => safe("explain", () => tools.explain(args)),
-  }),
+  ...(WPF_EXPLAIN_ENABLED
+    ? [
+        defineTool({
+          name: "explain",
+          description:
+            "Wisconsin Policy Forum context: semantic search over the WPF budget briefs for qualitative wisdom, history, and framing — to ATTRIBUTE (brief + page), never as a source of numbers. Call this for why / what-does-this-mean / give-me-context questions. Every $/FTE/% must still come from a reconciled budget tool.",
+          parameters: z.object(tools.explainShape),
+          execute: async (args) => safe("explain", () => tools.explain(args)),
+        }),
+      ]
+    : []),
   defineTool({
     name: "glossary",
     description:

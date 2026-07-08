@@ -16,3 +16,4 @@ wi-policy-forum/
 # `python -m parsers.wpf_briefs`); Neon holds them, and explain() serves short
 # attributed passages. Only the parser + counts-only QA report are committed.
 data/canonical/context/
+.vercel
