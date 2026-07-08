@@ -74,4 +74,35 @@ test.describe("copilot investigation (needs ANTHROPIC_API_KEY + DB)", () => {
     // The core assertion: whatever the model rendered, no figure is uncited.
     await assertEveryFigureIsCited(page);
   });
+
+  test("a why/explain question renders an attributed WPF context card", async ({ page }) => {
+    test.setTimeout(150_000); // includes a one-time embedding-model load on first explain
+
+    await page.goto("/");
+    const input = page.getByPlaceholder("Type a message...");
+    if (!(await input.isVisible().catch(() => false))) {
+      await page.locator("button.copilotKitButton").first().click();
+    }
+    await expect(input).toBeVisible();
+
+    await input.fill("Explain like I'm 12 why the City of Milwaukee's budget is tight — what's the Wisconsin Policy Forum's take?");
+    await input.press("Enter");
+
+    // The model should call `explain` → a ContextCard renders WPF passages.
+    const card = page.getByTestId("context-card").first();
+    await expect(card).toBeVisible({ timeout: 120_000 });
+
+    // WPF trust invariant: every passage in the card is attributed to WPF
+    // (a brief·page chip). WPF is secondary commentary, never uncited.
+    const report = await page.evaluate(() => {
+      const c = document.querySelector('[data-testid="context-card"]')!;
+      const passages = c.querySelectorAll("li").length;
+      const chips = c.querySelectorAll("[data-wpf-citation]").length;
+      return { passages, chips };
+    });
+    expect(report.passages, "context card has WPF passages").toBeGreaterThan(0);
+    expect(report.chips, "every WPF passage carries a brief·page attribution").toBeGreaterThanOrEqual(
+      report.passages,
+    );
+  });
 });

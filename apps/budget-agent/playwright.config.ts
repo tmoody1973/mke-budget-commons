@@ -5,7 +5,7 @@ import { config as loadEnv } from "dotenv";
 // (b) the webServer Playwright starts inherits MCP_DATABASE_URL + the API key.
 loadEnv({ path: ".env.local" });
 
-const PORT = 3000;
+const PORT = Number(process.env.PORT ?? 3000);
 const baseURL = `http://localhost:${PORT}`;
 
 export default defineConfig({

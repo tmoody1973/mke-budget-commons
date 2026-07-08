@@ -81,9 +81,13 @@ Confirmed against the real PDF — don't re-derive, but DO derive column bands p
 ```bash
 make parse-city-detailed FY=2026 TYPE=adopted   # parse one doc family
 make reconcile                                   # run the pytest reconciliation suite
-make load-neon                                   # rebuild Neon from repo Parquet (idempotent)
+make load-neon                                   # rebuild Neon FACTS from repo Parquet (idempotent)
+make parse-wpf                                    # parse the WPF briefs → context chunks (Layer 2)
+make load-context                                # embed + load the WPF chunks → Neon pgvector (idempotent)
 make mcp-dev                                      # run the MCP server locally (stdio)
 ```
+
+**Rebuild order:** facts first (`make load-neon`, Python — drops+rebuilds the fact tables), then context (`make parse-wpf && make load-context`, TS — owns `context_chunk`; `load-neon` never touches it).
 
 (If `make` targets don't exist yet, they're TODO — build them as we go; the Makefile is the source of truth for how to run things.)
 
@@ -95,3 +99,4 @@ make mcp-dev                                      # run the MCP server locally (
 - Don't ship a row without `source_page`.
 - **MPS is now in scope** (as of 2026-07-07) — a deliberate charter expansion. Milwaukee Public Schools is the **third government** (`gov='mps'`), FY2026-27 Revised Proposed Budget. Don't scope-creep into **MMSD/MATC** or into **capital budgets / ACFR actuals-monitoring**. County capital stays parked (it's OCR, not reconciliation-grade without a native-text source).
 - Don't swallow a reconciliation mismatch — flag it, disposition it, surface it.
+- **WPF context corpus (Layer 2) is CONTEXT, never FACT.** The Wisconsin Policy Forum briefs are a *secondary commentary* corpus (`context_chunk`, `source='wpf'`) for semantic retrieval via the `explain` tool — qualitative wisdom/framing, always attributed (brief · page). **No budget number ever originates from WPF;** every `$`/FTE/`%` still comes from a reconciled fact tool and is cited to a budget page. If WPF and a tool differ on a figure, the tool wins. The reconciliation wall is unchanged: `parsers/wpf_briefs.py` is deterministic (no LLM), the corpus is prose (never reconciled), and embeddings run only in the TS serving layer (`db/load-context.ts` + `explain`), never in `parsers/`. Source PDFs and derived chunks are gitignored (copyrighted); only short attributed passages are served.

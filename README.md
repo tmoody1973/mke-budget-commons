@@ -31,6 +31,8 @@ L1  parsers/    →  Python, deterministic, reconciled by tests/ — pdfplumber+
 
 The repo is the source of truth; **Neon is disposable** — `make load-neon` rebuilds it entirely from repo Parquet, idempotently. Reconciliation runs as a pytest suite; canonical data is regenerated only when the suite is green (or discrepancies are explicitly dispositioned as source-document errors).
 
+Alongside the fact pipeline sits a **secondary context corpus (Layer 2):** the Wisconsin Policy Forum's budget briefs, parsed into cited prose chunks (`parsers/wpf_briefs.py`, deterministic, no LLM), embedded locally (transformers.js) into Neon **pgvector**, and served by an `explain` tool for qualitative *framing* — always attributed to a brief page. **WPF is never a source of figures:** every dollar/FTE/% still comes from a reconciled fact tool and cites a budget page. Facts=Python, context=TS; `make load-neon` never touches `context_chunk`.
+
 ## Quick start
 
 ### Prerequisites
