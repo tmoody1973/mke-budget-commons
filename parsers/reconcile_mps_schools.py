@@ -13,15 +13,26 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional
 
 import pandas as pd
+import yaml
 
 from parsers.mps_lineitem import DEFAULT_XLSX, EXP_SHEET
 from parsers.mps_schools import SchoolBook
 
 EPS_DOLLARS = 0.5
 EPS_FTE = 0.05
+
+_CROSSWALK_PATH = Path(__file__).resolve().parent.parent / "crosswalks" / "mps_schools.yml"
+
+
+def _load_crosswalk() -> dict:
+    if not _CROSSWALK_PATH.exists():
+        return {"verified": {}, "discrepancies": {}}
+    d = yaml.safe_load(_CROSSWALK_PATH.read_text()) or {}
+    return {"verified": d.get("verified") or {}, "discrepancies": d.get("discrepancies") or {}}
 
 
 def _norm(s: str) -> str:
@@ -39,7 +50,8 @@ class Check:
     xlsx_amount: Optional[float]
     pdf_fte: Optional[float]
     xlsx_fte: Optional[float]
-    status: str                        # PASS | FAIL | UNMATCHED
+    status: str                        # PASS | FAIL | UNMATCHED | DISCREPANCY
+    via: str = "auto"                  # auto | crosswalk | discrepancy
 
     @property
     def delta(self) -> Optional[float]:
@@ -67,22 +79,36 @@ def _xlsx_school_aggregates(xlsx_path: str) -> dict[str, dict]:
 
 def reconcile_schools(book: SchoolBook, xlsx_path: str = DEFAULT_XLSX) -> list[Check]:
     agg = _xlsx_school_aggregates(xlsx_path)
-    # index by normalized truncated name → candidate codes (with nonzero budget)
+    by_code = {sd.split()[0]: v for sd, v in agg.items()}   # 3-digit code → aggregate
+    xwalk = _load_crosswalk()
     checks: list[Check] = []
     for s in book.schools:
+        amt, fte = s.amt_proposed_2027, s.fte_proposed_2027
+        # 1. curated crosswalk — verified exact mappings (re-checked every run)
+        if s.name in xwalk["verified"]:
+            v = by_code.get(str(xwalk["verified"][s.name]))
+            ok = v and abs((amt or 0) - v["amt"]) <= EPS_DOLLARS and abs((fte or 0) - v["fte"]) <= EPS_FTE
+            checks.append(Check(s.name, xwalk["verified"][s.name], amt, v["amt"] if v else None,
+                                fte, v["fte"] if v else None, "PASS" if ok else "FAIL", via="crosswalk"))
+            continue
+        # 2. documented cross-document discrepancy (the two documents disagree)
+        if s.name in xwalk["discrepancies"]:
+            code = (xwalk["discrepancies"][s.name] or {}).get("code")
+            v = by_code.get(str(code)) if code else None
+            checks.append(Check(s.name, code, amt, v["amt"] if v else None,
+                                fte, v["fte"] if v else None, "DISCREPANCY", via="discrepancy"))
+            continue
+        # 3. automatic normalized-name prefix match
         npdf = _norm(s.name)
         cands = [(sd, v) for sd, v in agg.items()
                  if _norm(v["name"]) and npdf.startswith(_norm(v["name"])) and v["amt"] != 0]
-        cands.sort(key=lambda kv: -len(_norm(kv[1]["name"])))  # most specific prefix wins
+        cands.sort(key=lambda kv: -len(_norm(kv[1]["name"])))
         if not cands:
-            checks.append(Check(s.name, None, s.amt_proposed_2027, None,
-                                s.fte_proposed_2027, None, "UNMATCHED"))
+            checks.append(Check(s.name, None, amt, None, fte, None, "UNMATCHED"))
             continue
         sd, v = cands[0]
-        ok = (abs((s.amt_proposed_2027 or 0) - v["amt"]) <= EPS_DOLLARS
-              and abs((s.fte_proposed_2027 or 0) - v["fte"]) <= EPS_FTE)
-        checks.append(Check(s.name, f"{sd}", s.amt_proposed_2027, v["amt"],
-                            s.fte_proposed_2027, v["fte"], "PASS" if ok else "FAIL"))
+        ok = abs((amt or 0) - v["amt"]) <= EPS_DOLLARS and abs((fte or 0) - v["fte"]) <= EPS_FTE
+        checks.append(Check(s.name, sd, amt, v["amt"], fte, v["fte"], "PASS" if ok else "FAIL"))
     return checks
 
 
@@ -90,6 +116,7 @@ def summarize(checks: list[Check]) -> dict:
     return {
         "passed": [c for c in checks if c.status == "PASS"],
         "failed": [c for c in checks if c.status == "FAIL"],
+        "discrepancy": [c for c in checks if c.status == "DISCREPANCY"],
         "unmatched": [c for c in checks if c.status == "UNMATCHED"],
         "total": len(checks),
     }

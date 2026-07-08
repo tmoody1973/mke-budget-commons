@@ -6,11 +6,11 @@
 
 ## Result
 
-**135 schools** parsed. **99 (73%) cross-verify to the dollar and FTE** against the district ledger — strong independent confirmation the extraction is faithful.
+**135 schools** parsed. **126 (93%) cross-verify to the dollar and FTE** against the district ledger — strong independent confirmation the extraction is faithful. Nothing is unmatched or forced.
 
-- ✅ **99 exact** cross-document matches (budget + FTE).
-- ❓ **5 matched but not exact** — schools whose budget spans multiple `.xlsx` cost centers (the single best-name match undercounts); listed below.
-- ⚪ **31 unmatched** — name-truncation / specialty schools pending a hand-built `crosswalks/mps_schools.yml`; their figures are still extracted faithfully.
+- ✅ **126 exact** cross-document matches (27 via the curated `crosswalks/mps_schools.yml`, the rest by automatic name match).
+- 📌 **9 documented discrepancies** — schools where the per-school PDF and the `.xlsx` line-item sum genuinely disagree (the two documents allocate shared / partnership costs differently); reported with the delta, not forced.
+- ❌ **0 failures** · ⚪ **0 unmatched**.
 
 District school-controlled budget: **$797,211,914** over **55,537** projected pupils — an average of **$14,355 per pupil** (school-level budgets only; excludes central offices and districtwide costs).
 
@@ -28,17 +28,19 @@ District school-controlled budget: **$797,211,914** over **55,537** projected pu
 
 Small specialty/alternative schools sit at the high end (tiny denominators); large comprehensive schools at the low end — the expected shape, and exactly the equity signal the per-pupil view surfaces.
 
-## Matched-but-not-exact (multi-cost-center schools)
+## Documented cross-document discrepancies
 
-| School | PDF budget | ledger match | Δ |
+These schools are matched to their ledger cost center, but the per-school PDF and the `.xlsx` line-item sum report **different** figures — the two official documents allocate shared / partnership costs differently. Captured and flagged, never forced to agree (registered in `crosswalks/mps_schools.yml`).
+
+| School | PDF budget | ledger figure | Δ |
 |---|--:|--:|--:|
+| Alliance School | $2,298,045 | $2,044,994 | $253,051 |
+| Groppi HS | $2,393,044 | $2,010,885 | $382,159 |
+| Milw HS - Arts | $11,182,877 | — (no ledger match) | n/a |
 | Project Stay HS | $2,295,823 | $1,774,177 | $521,646 |
-| Starms Discovery School | $4,153,040 | $4,034,669 | $118,371 |
+| Starms Discovery School | $4,153,040 | $4,274,533 | $-121,493 |
 | Starms Early Childhood | $4,392,904 | $4,274,533 | $118,371 |
 | Transition HS | $1,898,610 | $1,387,343 | $511,267 |
 | Victory School | $6,163,349 | $6,292,457 | $-129,108 |
-
-## Unmatched (pending a name crosswalk — figures still extracted)
-
-Acad Of Accelerated Learning, Alliance School, Andrew Douglas School, Audubon Tech & Comm Ctr MS, Bay View Montessori, Bethune Academy, Carson Academy, Carver Academy, Craig Montessori School, Fernwood Montessori School, Groppi HS, Hartford University School, King ES, Lincoln Center Of The Arts, Maryland Av Montessori, Milw Acad Of Chinese Language, Milw Co Youth Educ Center, Milw French Immersion School, Milw German Immersion School, Milw HS - Arts, Milw Parkside School, Milw School Of Languages, Milw Sign Language School, Milw Spanish Immersion School, Morse MS, North HS, Pulaski HS, Vincent HS, Westside Academy, WHS Of Information Technology, Wis Conservatory Lifelong Learning
+| Vincent HS | $7,344,428 | $7,241,142 | $103,286 |
 

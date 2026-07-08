@@ -74,7 +74,8 @@ MPS_SCHOOL_DOCS = [
      "pdf": MPS_SCHOOL_PDF, "doc_id": MPS_SCHOOL_DOC_ID},
 ]
 
-SCHOOL_STATUS_MAP = {"PASS": "pass", "FAIL": "open", "UNMATCHED": "not_reconcilable"}
+SCHOOL_STATUS_MAP = {"PASS": "pass", "FAIL": "open", "UNMATCHED": "not_reconcilable",
+                     "DISCREPANCY": "source_inconsistency"}
 
 DATA_TABLES = [
     "reconciliation_result", "fact_school", "fact_amendment", "fact_budget_line",

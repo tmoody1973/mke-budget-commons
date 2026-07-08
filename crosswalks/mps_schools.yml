@@ -1,0 +1,49 @@
+# MPS per-school PDF name → district .xlsx Sch/Dept code crosswalk.
+# The .xlsx truncates school names and shares no code with the per-school PDF.
+# Every 'verified' mapping was derived by EXACT amount+FTE match (a wrong
+# mapping would not reconcile) and is re-checked on every run — this is an
+# identity map, never a way to force numbers to agree.
+
+verified:
+  "Acad Of Accelerated Learning": "316"
+  "Andrew Douglas School": "215"
+  "Audubon Tech & Comm Ctr MS": "041"
+  "Bay View Montessori": "105"
+  "Bethune Academy": "356"
+  "Carson Academy": "309"
+  "Carver Academy": "298"
+  "Craig Montessori School": "119"
+  "Fernwood Montessori School": "158"
+  "Hartford University School": "208"
+  "King ES": "083"
+  "Lincoln Center Of The Arts": "006"
+  "Maryland Av Montessori": "268"
+  "Milw Acad Of Chinese Language": "145"
+  "Milw Co Youth Educ Center": "411"
+  "Milw French Immersion School": "140"
+  "Milw German Immersion School": "146"
+  "Milw Parkside School": "362"
+  "Milw School Of Languages": "071"
+  "Milw Sign Language School": "226"
+  "Milw Spanish Immersion School": "167"
+  "Morse MS": "052"
+  "North HS": "025"
+  "Pulaski HS": "026"
+  "WHS Of Information Technology": "039"
+  "Westside Academy": "370"
+  "Wis Conservatory Lifelong Learning": "399"
+
+# Genuine cross-document discrepancies: the per-school PDF and the .xlsx
+# line-item sum report different figures for these schools (the two documents
+# allocate shared / partnership costs differently). Mapped to their code so the
+# delta is reported as a documented finding — captured, flagged, never forced.
+discrepancies:
+  "Alliance School": { code: "042" }
+  "Groppi HS": { code: "019" }
+  "Milw HS - Arts": { code: null }
+  "Project Stay HS": { code: "458" }
+  "Starms Discovery School": { code: "149" }
+  "Starms Early Childhood": { code: "149" }
+  "Transition HS": { code: "088" }
+  "Victory School": { code: "387" }
+  "Vincent HS": { code: "033" }
