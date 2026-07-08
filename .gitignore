@@ -9,3 +9,7 @@ node_modules/
 # (comment the next line out once you've decided to version the source docs)
 # data/raw/**/*.pdf
 .playwright-mcp/
+
+# WPF budget briefs — copyrighted source PDFs (inputs for the Layer-2 context corpus;
+# the derived, attributed chunks are what gets committed, not the raw PDFs)
+wi-policy-forum/
