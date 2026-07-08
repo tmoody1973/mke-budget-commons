@@ -33,6 +33,10 @@ parse-county-operating:
 	python -m parsers.county_operating
 	python -m scripts.report_county_operating
 
+parse-mps:
+	python -m parsers.mps_lineitem
+	python -m scripts.report_mps_lineitem
+
 reconcile:
 	pytest tests/ -v
 
@@ -48,6 +52,7 @@ mcp-dev:
 mcp-test:
 	cd mcp && node test/smoke.mjs
 	cd mcp && node test/smoke_county.mjs
+	cd mcp && node test/smoke_mps.mjs
 
 explainer:
 	python -m scripts.build_explainer

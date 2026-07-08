@@ -60,24 +60,34 @@ server.registerTool(
   {
     title: "List departments",
     description: "Departments for a government with their adopted grand totals.",
-    inputSchema: { gov: z.enum(["city", "county"]).default("city"), fiscal_year: z.number().int().default(2026) },
+    inputSchema: { gov: z.enum(["city", "county", "mps"]).default("city"), fiscal_year: z.number().int().optional() },
   },
-  async ({ gov }) => {
-    // MAX, not SUM: a department's summary/rollup unit already equals the sum of
-    // its divisions, so MAX gives the whole-department total without double-count.
-    const rows = await query(
-      `SELECT d.dept_id, d.canonical_name,
-              MAX(f.amount) FILTER (WHERE ${grandTotalPred("f.")}
-                                      AND f.amount_kind='adopted') AS adopted_total
-         FROM dim_department d JOIN fact_budget_line f USING (dept_id)
-        WHERE d.gov_id = $1
-        GROUP BY 1,2 ORDER BY adopted_total DESC NULLS LAST`,
-      [gov],
-    );
+  async ({ gov, fiscal_year }) => {
+    // City/county: MAX over a printed department total (a summary unit already
+    // equals the sum of its divisions). MPS: no printed per-school total exists,
+    // so SUM the atomic line items — the natural, non-double-counting rollup.
+    // MPS defaults to FY2027 (proposed, the headline); city/county to adopted.
+    const rows = gov === "mps"
+      ? await query(
+          `SELECT d.dept_id, d.canonical_name,
+                  SUM(f.amount) FILTER (WHERE f.line_kind='expenditure'
+                                          AND f.fiscal_year=$1) AS total
+             FROM dim_department d JOIN fact_budget_line f USING (dept_id)
+            WHERE d.gov_id='mps' GROUP BY 1,2 ORDER BY total DESC NULLS LAST`,
+          [fiscal_year ?? 2027])
+      : await query(
+          `SELECT d.dept_id, d.canonical_name,
+                  MAX(f.amount) FILTER (WHERE ${grandTotalPred("f.")}
+                                          AND f.amount_kind='adopted') AS total
+             FROM dim_department d JOIN fact_budget_line f USING (dept_id)
+            WHERE d.gov_id = $1
+            GROUP BY 1,2 ORDER BY total DESC NULLS LAST`,
+          [gov]);
     return ok({
       government: gov,
+      total_label: gov === "mps" ? `FY${fiscal_year ?? 2027}` : "adopted",
       departments: rows.map((r) => ({
-        dept_id: r.dept_id, name: r.canonical_name, adopted_total: num(r.adopted_total),
+        dept_id: r.dept_id, name: r.canonical_name, total: num(r.total),
       })),
     });
   },
@@ -89,8 +99,8 @@ server.registerTool(
     title: "Get department budget",
     description: "Reserved-code totals, FTE, divisions, and top expenditures for a department, with citations.",
     inputSchema: {
-      dept: z.string(), gov: z.enum(["city", "county"]).default("city"),
-      fiscal_year: z.number().int().default(2026), doc_type: z.string().default("adopted"),
+      dept: z.string(), gov: z.enum(["city", "county", "mps"]).default("city"),
+      fiscal_year: z.number().int().optional(), doc_type: z.string().default("adopted"),
     },
   },
   async ({ dept, gov, fiscal_year, doc_type }) => {
@@ -99,11 +109,15 @@ server.registerTool(
     if (cands.length > 1) return ok({ ambiguous: true, candidates: cands });
     const dept_id = cands[0].dept_id;
     const vintage = VINTAGE[doc_type] ?? "adopted";
+    const fy = fiscal_year ?? (gov === "mps" ? 2027 : 2026);
 
     // County chapters report category rollups, not the city's reserved-code
     // ledger — a different breakdown (Personnel/Operations/Debt/Interdepartmental
     // → Total Expenditures; Total Expenditures − Total Revenues = Tax Levy).
-    if (gov === "county") return ok(await countyDeptBudget(cands[0], fiscal_year));
+    if (gov === "county") return ok(await countyDeptBudget(cands[0], fy));
+    // MPS: a school/office is a set of line items — sum them, and break down by
+    // object (Teacher, Para, Benefits, …) and fund.
+    if (gov === "mps") return ok(await mpsSchoolBudget(cands[0], fy));
 
     // MAX over reserved-code totals gives the department rollup (summary unit)
     // without double-counting divisions. Provenance comes from the same rows.
@@ -155,12 +169,17 @@ server.registerTool(
     title: "Search line items",
     description: "Full-text search over line descriptions, ranked and cited.",
     inputSchema: {
-      query: z.string(), gov: z.enum(["city", "county"]).optional(),
+      query: z.string(), gov: z.enum(["city", "county", "mps"]).optional(),
       fiscal_year: z.number().int().optional(), limit: z.number().int().max(50).default(20),
     },
   },
   async ({ query: q, gov, fiscal_year, limit }) => {
-    const where = ["f.search @@ plainto_tsquery('english',$1)", "f.amount_kind='adopted'"];
+    // Current-vintage per government: city/county adopt budgets; MPS proposes.
+    // Without a gov filter, allow both so nothing is invisible.
+    const vintagePred = gov === "mps" ? "f.amount_kind='proposed'"
+      : gov ? "f.amount_kind='adopted'"
+      : "f.amount_kind IN ('adopted','proposed')";
+    const where = ["f.search @@ plainto_tsquery('english',$1)", vintagePred];
     const params: any[] = [q];
     if (gov) { params.push(gov); where.push(`d.gov_id=$${params.length}`); }
     if (fiscal_year) { params.push(fiscal_year); where.push(`f.doc_id IN (SELECT doc_id FROM dim_document WHERE fiscal_year=$${params.length})`); }
@@ -191,7 +210,7 @@ server.registerTool(
     title: "Get positions",
     description: "Position lines for a department: titles, pay ranges, FTE, footnote flags — cited.",
     inputSchema: {
-      dept: z.string(), gov: z.enum(["city", "county"]).default("city"),
+      dept: z.string(), gov: z.enum(["city", "county", "mps"]).default("city"),
       fiscal_year: z.number().int().default(2026),
     },
   },
@@ -292,9 +311,20 @@ server.registerTool(
   },
 );
 
-// Department rollup (reserved-code totals) for one fiscal year — MAX avoids
-// double-counting a summary unit against its divisions.
-async function deptYear(dept_id: string, year: number) {
+// Department rollup for one fiscal year. City/county: MAX over the printed
+// department total (avoids double-counting a summary unit against its divisions).
+// MPS: SUM the atomic line items (no printed per-school total exists).
+async function deptYear(dept_id: string, year: number, gov = "city") {
+  if (gov === "mps") {
+    const [a] = await query(
+      `SELECT SUM(amount) FILTER (WHERE line_kind='expenditure') AS grand,
+              SUM(units)  FILTER (WHERE line_kind='expenditure') AS fte
+         FROM fact_budget_line WHERE dept_id=$1 AND fiscal_year=$2`, [dept_id, year]);
+    const cites = await query(
+      `SELECT DISTINCT doc_id, source_page FROM fact_budget_line
+        WHERE dept_id=$1 AND fiscal_year=$2 AND line_kind='expenditure' LIMIT 5`, [dept_id, year]);
+    return { a, cites };
+  }
   const [a] = await query(
     `SELECT
        MAX(amount) FILTER (WHERE ${grandTotalPred()}) AS grand,
@@ -314,6 +344,41 @@ async function deptYear(dept_id: string, year: number) {
 
 const pct = (from: number | null, to: number | null) =>
   from && to != null ? Math.round(((to - from) / from) * 1000) / 10 : null;
+
+// MPS school/office budget: a set of line items (no printed per-school total),
+// summed and broken down by object category and fund. FY2027 proposed default.
+async function mpsSchoolBudget(cand: { dept_id: string; canonical_name: string }, fiscal_year: number) {
+  const [tot] = await query(
+    `SELECT SUM(amount) total, SUM(units) fte, COUNT(*) lines
+       FROM fact_budget_line
+      WHERE dept_id=$1 AND line_kind='expenditure' AND fiscal_year=$2`,
+    [cand.dept_id, fiscal_year]);
+  const byObject = await query(
+    `SELECT line_description AS object, SUM(amount) amount, SUM(units) fte,
+            MIN(doc_id) doc_id, MIN(source_page) source_page
+       FROM fact_budget_line
+      WHERE dept_id=$1 AND line_kind='expenditure' AND fiscal_year=$2
+      GROUP BY line_description ORDER BY SUM(amount) DESC NULLS LAST LIMIT 12`,
+    [cand.dept_id, fiscal_year]);
+  const byFund = await query(
+    `SELECT fund, SUM(amount) amount FROM fact_budget_line
+      WHERE dept_id=$1 AND line_kind='expenditure' AND fiscal_year=$2 AND fund IS NOT NULL
+      GROUP BY fund ORDER BY SUM(amount) DESC NULLS LAST`,
+    [cand.dept_id, fiscal_year]);
+  return {
+    school_or_office: cand.canonical_name, dept_id: cand.dept_id, gov: "mps",
+    fiscal_year, vintage: fiscal_year === 2027 ? "proposed" : "budget",
+    total: num(tot.total), total_fte: num(tot.fte), line_count: Number(tot.lines),
+    top_spending_by_object: byObject.map((r) => ({
+      object: r.object, amount: num(r.amount), fte: num(r.fte), page: r.source_page,
+    })),
+    by_fund: byFund.map((r) => ({ fund: r.fund, amount: num(r.amount) })),
+    citations: citations(byObject),
+    note: "MPS schools/offices are sets of line items (no printed per-school total); "
+      + "the total is their sum. Object = Nature of Expenditure (Teacher, Para, Benefits, …). "
+      + "Enrollment/per-pupil is not in this dataset (see the summary document).",
+  };
+}
 
 // County department budget: category rollups keyed by fiscal_year (each county
 // fiscal year maps to exactly one printed column). No per-position ledger — only
@@ -363,7 +428,7 @@ server.registerTool(
     description: "Department reserved-code totals for two fiscal years, with $ and % deltas. Cited.",
     inputSchema: {
       dept: z.string(), year_a: z.number().int(), year_b: z.number().int(),
-      gov: z.enum(["city", "county"]).default("city"),
+      gov: z.enum(["city", "county", "mps"]).default("city"),
     },
   },
   async ({ dept, year_a, year_b, gov }) => {
@@ -371,7 +436,7 @@ server.registerTool(
     if (cands.length === 0) return fail(`No department matches "${dept}".`);
     if (cands.length > 1) return ok({ ambiguous: true, candidates: cands });
     const id = cands[0].dept_id;
-    const [A, B] = [await deptYear(id, year_a), await deptYear(id, year_b)];
+    const [A, B] = [await deptYear(id, year_a, gov), await deptYear(id, year_b, gov)];
     if (A.cites.length === 0 || B.cites.length === 0)
       return fail(`Missing data for ${A.cites.length === 0 ? year_a : year_b} — loaded years may differ.`);
     const line = (k: string) => {
@@ -397,7 +462,7 @@ server.registerTool(
     description: "A department's budget through the stages present for a fiscal year (requested → proposed/recommended → adopted), with stage deltas.",
     inputSchema: {
       dept: z.string(), fiscal_year: z.number().int(),
-      gov: z.enum(["city", "county"]).default("city"),
+      gov: z.enum(["city", "county", "mps"]).default("city"),
     },
   },
   async ({ dept, fiscal_year, gov }) => {
@@ -494,21 +559,60 @@ async function budgetBreakdownCounty(fiscal_year: number, dept?: string) {
   });
 }
 
+// MPS "where the money goes": by object category (Nature of Expenditure), plus a
+// people-costs rollup (salaries + benefits), district-wide or for one school/office.
+async function budgetBreakdownMps(fiscal_year: number, dept?: string) {
+  let where = "d.gov_id='mps' AND f.line_kind='expenditure' AND f.fiscal_year=$1";
+  const params: any[] = [fiscal_year];
+  let label = "district-wide";
+  if (dept) {
+    const cands = await resolveDept("mps", dept);
+    if (cands.length === 0) return fail(`No MPS school/office matches "${dept}".`);
+    if (cands.length > 1) return ok({ ambiguous: true, candidates: cands });
+    params.push(cands[0].dept_id);
+    where += ` AND f.dept_id=$${params.length}`;
+    label = cands[0].canonical_name;
+  }
+  const [t] = await query(
+    `SELECT SUM(f.amount) total,
+            SUM(f.amount) FILTER (WHERE f.line_description ~* 'TEACHER|PARA|SALAR|ASST|AIDE|SUBSTITUTE|CLERK|SECRETARY|PRINCIPAL') salaries,
+            SUM(f.amount) FILTER (WHERE f.line_description ~* 'BENEFIT|OPEB|RETIRE|INSURANCE|FICA|PENSION') benefits
+       FROM fact_budget_line f JOIN dim_department d USING (dept_id) WHERE ${where}`, params);
+  const grand = num(t.total);
+  if (!grand) return fail(`No MPS expenditures for ${label} in FY${fiscal_year}.`);
+  const objects = await query(
+    `SELECT f.line_description object, SUM(f.amount) amount
+       FROM fact_budget_line f JOIN dim_department d USING (dept_id) WHERE ${where}
+      GROUP BY f.line_description ORDER BY SUM(f.amount) DESC NULLS LAST LIMIT 12`, params);
+  const part = (v: any) => { const n = num(v) ?? 0; return { amount: n, pct: Math.round((n / grand) * 1000) / 10 }; };
+  const sal = num(t.salaries) ?? 0, ben = num(t.benefits) ?? 0;
+  return ok({
+    scope: `mps · ${label}`, fiscal_year, total: grand,
+    people_costs: { salaries: part(sal), benefits: part(ben), other: part(grand - sal - ben) },
+    top_objects: objects.map((r) => ({ object: r.object, ...part(r.amount) })),
+    note: "People costs are approximated from object-category names (salaries + benefits). "
+      + "Top objects are the largest Nature-of-Expenditure categories.",
+  });
+}
+
 server.registerTool(
   "budget_breakdown",
   {
     title: "Budget breakdown",
     description: "Where the money goes: salaries / fringe / operating / equipment / special funds as $ and % of the total, for a department or citywide. Cited.",
     inputSchema: {
-      gov: z.enum(["city", "county"]).default("city"),
-      fiscal_year: z.number().int().default(2026),
+      gov: z.enum(["city", "county", "mps"]).default("city"),
+      fiscal_year: z.number().int().optional(),
       dept: z.string().optional(),
     },
   },
   async ({ gov, fiscal_year, dept }) => {
-    if (gov === "county") return budgetBreakdownCounty(fiscal_year, dept);
+    const fy = fiscal_year ?? (gov === "mps" ? 2027 : 2026);
+    if (gov === "county") return budgetBreakdownCounty(fy, dept);
+    if (gov === "mps") return budgetBreakdownMps(fy, dept);
 
     let where = "d.gov_id=$1 AND f.fiscal_year=$2 AND f.line_kind='total'";
+    fiscal_year = fy;
     const params: any[] = [gov, fiscal_year];
     let label = `${gov} citywide`;
     if (dept) {
@@ -558,7 +662,7 @@ server.registerTool(
     title: "Biggest changes between years",
     description: "The departments whose budgets changed the most between two fiscal years — the story-finder. Ranked by $ or %, with citations.",
     inputSchema: {
-      gov: z.enum(["city", "county"]).default("city"),
+      gov: z.enum(["city", "county", "mps"]).default("city"),
       year_a: z.number().int(), year_b: z.number().int(),
       measure: z.enum(["dollars", "percent"]).default("dollars"),
       direction: z.enum(["up", "down", "both"]).default("both"),
@@ -566,12 +670,20 @@ server.registerTool(
     },
   },
   async ({ gov, year_a, year_b, measure, direction, limit }) => {
+    // MPS totals are SUM-over-line-items; city/county are MAX-over-printed-total.
+    const yearAgg = (yr: string) =>
+      gov === "mps"
+        ? `SUM(f.amount) FILTER (WHERE f.line_kind='expenditure' AND f.fiscal_year=${yr})`
+        : `MAX(f.amount) FILTER (WHERE ${grandTotalPred("f.")} AND f.fiscal_year=${yr})`;
+    const yearPred = gov === "mps"
+      ? `f.line_kind='expenditure' AND f.fiscal_year=$3`
+      : `${grandTotalPred("f.")} AND f.fiscal_year=$3`;
     const rows = await query(
       `SELECT d.canonical_name AS dept,
-         MAX(f.amount) FILTER (WHERE ${grandTotalPred("f.")} AND f.fiscal_year=$2) a,
-         MAX(f.amount) FILTER (WHERE ${grandTotalPred("f.")} AND f.fiscal_year=$3) b,
-         MIN(f.source_page) FILTER (WHERE ${grandTotalPred("f.")} AND f.fiscal_year=$3) page,
-         MIN(f.doc_id)      FILTER (WHERE ${grandTotalPred("f.")} AND f.fiscal_year=$3) doc_id
+         ${yearAgg("$2")} a,
+         ${yearAgg("$3")} b,
+         MIN(f.source_page) FILTER (WHERE ${yearPred}) page,
+         MIN(f.doc_id)      FILTER (WHERE ${yearPred}) doc_id
        FROM fact_budget_line f JOIN dim_department d USING (dept_id)
        WHERE d.gov_id=$1 GROUP BY d.canonical_name`, [gov, year_a, year_b]);
     let items = rows
@@ -601,7 +713,7 @@ server.registerTool(
     title: "Find positions",
     description: "Search city positions by title, minimum salary, or footnote flag (e.g. grant-funded). 'Who earns over $150K', 'grant-funded positions'. Cited.",
     inputSchema: {
-      query: z.string().optional(), gov: z.enum(["city", "county"]).default("city"),
+      query: z.string().optional(), gov: z.enum(["city", "county", "mps"]).default("city"),
       fiscal_year: z.number().int().default(2026),
       min_salary: z.number().optional(), flag: z.string().optional(),
       limit: z.number().int().max(50).default(25),
@@ -637,6 +749,72 @@ server.registerTool(
   },
 );
 
+// --- MPS-specific tools (parents/students, journalists) --------------------- //
+
+server.registerTool(
+  "compare_schools",
+  {
+    title: "Compare schools (MPS)",
+    description: "Side-by-side FY2027 proposed budget, staffing (FTE), and object breakdown for two MPS schools or offices — the school-choice / equity lens. Cited.",
+    inputSchema: { school_a: z.string(), school_b: z.string(), fiscal_year: z.number().int().default(2027) },
+  },
+  async ({ school_a, school_b, fiscal_year }) => {
+    const fy = fiscal_year === 2026 ? 2026 : 2027;
+    const side = async (name: string) => {
+      const c = await resolveDept("mps", name);
+      if (c.length === 0) return { query: name, error: `No MPS school/office matches "${name}".` };
+      if (c.length > 1) return { query: name, ambiguous: c.map((x) => x.canonical_name).slice(0, 8) };
+      const [t] = await query(
+        `SELECT SUM(amount) total, SUM(units) fte, COUNT(*) lines FROM fact_budget_line
+          WHERE dept_id=$1 AND line_kind='expenditure' AND fiscal_year=$2`, [c[0].dept_id, fy]);
+      const top = await query(
+        `SELECT line_description object, SUM(amount) amount FROM fact_budget_line
+          WHERE dept_id=$1 AND line_kind='expenditure' AND fiscal_year=$2
+          GROUP BY line_description ORDER BY SUM(amount) DESC NULLS LAST LIMIT 5`, [c[0].dept_id, fy]);
+      return {
+        name: c[0].canonical_name, total: num(t.total), fte: num(t.fte), line_count: Number(t.lines),
+        top_objects: top.map((r) => ({ object: r.object, amount: num(r.amount) })),
+      };
+    };
+    const [a, b] = [await side(school_a), await side(school_b)];
+    const delta = (a.total != null && b.total != null) ? { total: b.total - a.total, pct: pct(a.total, b.total) } : null;
+    return ok({ fiscal_year: fy, a, b, delta,
+      note: "MPS school totals are the sum of their line items; enrollment/per-pupil is not in this dataset." });
+  },
+);
+
+server.registerTool(
+  "mps_fund_summary",
+  {
+    title: "MPS fund summary",
+    description: "MPS district-wide money by fund, total expenditures, total revenue, and the planned surplus / use of fund balance — the fiscal-health view. FY2027 proposed by default.",
+    inputSchema: { fiscal_year: z.number().int().default(2027) },
+  },
+  async ({ fiscal_year }) => {
+    const fy = fiscal_year === 2026 ? 2026 : 2027;
+    const funds = await query(
+      `SELECT f.fund, SUM(f.amount) amount FROM fact_budget_line f JOIN dim_department d USING (dept_id)
+        WHERE d.gov_id='mps' AND f.fund IS NOT NULL AND f.line_kind='expenditure' AND f.fiscal_year=$1
+        GROUP BY f.fund ORDER BY SUM(f.amount) DESC NULLS LAST`, [fy]);
+    const [tot] = await query(
+      `SELECT
+         SUM(amount) FILTER (WHERE f.line_kind='expenditure') exp,
+         SUM(amount) FILTER (WHERE f.line_kind='revenue') rev,
+         SUM(units)  FILTER (WHERE f.line_kind='expenditure') fte
+       FROM fact_budget_line f JOIN dim_department d USING (dept_id)
+      WHERE d.gov_id='mps' AND f.fiscal_year=$1`, [fy]);
+    const exp = num(tot.exp), rev = num(tot.rev);
+    return ok({
+      government: "mps", fiscal_year: fy, vintage: fy === 2027 ? "proposed" : "budget",
+      total_expenditures: exp, total_revenue: rev, total_fte: num(tot.fte),
+      surplus_or_fund_balance_use: (exp != null && rev != null) ? Math.round((rev - exp) * 100) / 100 : null,
+      by_fund: funds.map((r) => ({ fund: r.fund, amount: num(r.amount) })),
+      note: "Fund = account-code segment 2. Revenue over expenditure is a planned surplus / use of fund balance. "
+        + "Excludes the Recreation Extension rows that sit outside the printed grand total.",
+    });
+  },
+);
+
 // Tools that need data not yet ingested — declared so agents see the roadmap.
 for (const [name, need] of [
   ["get_amendments", "the amendment (file/markup) documents"],
@@ -644,7 +822,7 @@ for (const [name, need] of [
   server.registerTool(
     name,
     { title: name, description: `(Not yet available — needs ${need}.)`, inputSchema: {} },
-    async () => ok({ available: false, reason: `Requires ${need}; only 2026 city adopted is loaded so far.` }),
+    async () => ok({ available: false, reason: `Requires ${need}; not yet ingested.` }),
   );
 }
 

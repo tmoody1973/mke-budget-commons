@@ -17,7 +17,7 @@ Government budgets are published as giant PDFs (and, for MPS, a spreadsheet) tha
 | **City of Milwaukee** | 2026 Adopted Detailed Budget | ✅ live | 60/60 budgetary units, dollar-exact |
 | **City of Milwaukee** | 2027 Requested Budget | ✅ live | diff document (4 vintages) |
 | **Milwaukee County** | 2026 Adopted Operating Budget | ✅ live | 37/37 chapters, 0 findings, 0 not-reconcilable |
-| **Milwaukee Public Schools** | FY2026-27 Revised Proposed Budget | 🔧 in progress | line items → $1,600.6M published total (verified) |
+| **Milwaukee Public Schools** | FY2026-27 Revised Proposed Budget | ✅ live | 33,283 line items → $1,600,555,548 printed total, dollar-exact (2 vintages) |
 | Milwaukee County | 2026 Capital Budget | ⛔ parked | OCR-degraded — not reconciliation-grade |
 
 ## Architecture (4 layers)
@@ -57,7 +57,7 @@ Run `make help` for the full target list.
 
 ## MCP tools (L3)
 
-The server exposes 14 typed, read-only tools — every response carries `{doc_id, source_page}` provenance. Most take `gov: "city" | "county"` (MPS coming):
+The server exposes typed, read-only tools — every response carries `{doc_id, source_page}` provenance. Most take `gov: "city" | "county" | "mps"`:
 
 | Tool | What it answers |
 |------|-----------------|
@@ -73,6 +73,8 @@ The server exposes 14 typed, read-only tools — every response carries `{doc_id
 | `cite` | Full provenance for a single line: document, page, printed context |
 | `glossary` | Plain-language explanations of budget codes, terms, and footnotes |
 | `run_sql` | Read-only (`SELECT`/`WITH`) SQL against the canonical store |
+
+**MPS (schools) tools** — for parents/students and journalists: `get_department_budget`/`budget_breakdown`/`compare_years` light up for `gov:"mps"` (a school's budget, spending by object, year-over-year), plus `compare_schools` (side-by-side school comparison) and `mps_fund_summary` (funds, revenue, and the planned surplus / fund-balance use).
 
 ## Project structure
 
