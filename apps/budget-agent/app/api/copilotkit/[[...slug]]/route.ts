@@ -18,10 +18,12 @@ const systemPrompt = [
 ].join("\n\n");
 
 // BuiltInAgent reads ANTHROPIC_API_KEY from the environment automatically.
-// Model string is `provider/model`; claude-sonnet-4.5 is the newest Anthropic id
-// this CopilotKit build knows by name (Sonnet 5 to be verified via passthrough).
+// Model string is `provider/model`; CopilotKit passes the bare model id through to
+// the Anthropic API, so it must be a REAL API id. CopilotKit's built-in alias
+// "claude-sonnet-4.5" is NOT a valid API id (404 not_found) — use the actual
+// current id. claude-sonnet-5 is Sonnet 5 (the chosen model).
 const agent = new BuiltInAgent({
-  model: "anthropic/claude-sonnet-4.5",
+  model: "anthropic/claude-sonnet-5",
   prompt: systemPrompt,
   tools: serverTools,
   maxSteps: 6, // 4–6 step "find the story" investigations
@@ -32,6 +34,8 @@ const budgetRuntime = new CopilotRuntime({ agents: { default: agent } });
 const app = createCopilotHonoHandler({
   runtime: budgetRuntime,
   basePath: "/api/copilotkit",
+  // The v2 client defaults to single-route mode (fetchRuntimeInfoSingle); match it.
+  mode: "single-route",
 });
 
 export const GET = handle(app);
