@@ -74,24 +74,35 @@ async function main(): Promise<void> {
   const client = await pool.connect();
   try {
     await client.query(DDL);
-    await client.query("TRUNCATE context_chunk");
 
-    let n = 0;
-    for (const c of chunks) {
-      const vec = toVectorLiteral(await embedText(c.text, "passage"));
-      await client.query(
-        `INSERT INTO context_chunk
-           (chunk_id, source, brief_id, brief_title, gov, year, page, section, text, source_url, embedding)
-         VALUES ($1,'wpf',$2,$3,$4,$5,$6,$7,$8,$9,$10::vector)`,
-        [c.chunk_id, c.brief_id, c.brief_title, c.gov, c.year, c.page, c.section, c.text, c.source_url, vec],
-      );
-      if (++n % 25 === 0) process.stdout.write(`  embedded ${n}/${chunks.length}\r`);
+    // One transaction: a failure mid-load rolls back to the prior good corpus
+    // rather than leaving the served table truncated or half-filled.
+    await client.query("BEGIN");
+    try {
+      await client.query("TRUNCATE context_chunk");
+      let n = 0;
+      for (const c of chunks) {
+        const vec = toVectorLiteral(await embedText(c.text, "passage"));
+        await client.query(
+          `INSERT INTO context_chunk
+             (chunk_id, source, brief_id, brief_title, gov, year, page, section, text, source_url, embedding)
+           VALUES ($1,'wpf',$2,$3,$4,$5,$6,$7,$8,$9,$10::vector)`,
+          [c.chunk_id, c.brief_id, c.brief_title, c.gov, c.year, c.page, c.section, c.text, c.source_url, vec],
+        );
+        if (++n % 25 === 0) process.stdout.write(`  embedded ${n}/${chunks.length}\r`);
+      }
+      await client.query("COMMIT");
+    } catch (err) {
+      await client.query("ROLLBACK");
+      throw err;
     }
 
-    // The read-only MCP role must be able to read the new table (default
-    // privileges cover future tables, but grant explicitly to be safe).
+    // The read-only MCP role must be able to read the table (default privileges
+    // cover future tables, but grant explicitly to be safe). Outside the txn: if
+    // the role doesn't exist yet (load-neon hasn't run), a swallowed error here
+    // must not abort the committed load.
     await client.query(`GRANT SELECT ON context_chunk TO ${RO_ROLE}`).catch(() => {
-      /* role may not exist yet if load-neon hasn't run — that's fine */
+      /* role may not exist yet — that's fine */
     });
 
     const { rows } = await client.query<{ total: string; embedded: string }>(

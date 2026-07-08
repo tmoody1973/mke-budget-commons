@@ -194,6 +194,17 @@ def parse_brief(brief: Brief) -> list[Chunk]:
 def build() -> pd.DataFrame:
     rows = [c for brief in BRIEFS for c in parse_brief(brief)]
     df = pd.DataFrame([c.__dict__ for c in rows])
+    # No silent parses: every brief must yield chunks over a real span of pages. If
+    # a future year's layout drifts and the heuristics over-filter a brief to near
+    # nothing, fail loudly rather than embed a silently-shrunken corpus.
+    for brief in BRIEFS:
+        g = df[df.brief_id == brief.brief_id]
+        pages = g.page.nunique()
+        if len(g) < 5 or pages < 5:
+            raise SystemExit(
+                f"{brief.brief_id}: only {len(g)} chunks over {pages} pages — "
+                f"the extraction heuristics likely broke on this PDF. Inspect before loading."
+            )
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     df.to_csv(OUT_DIR / "chunks.csv", index=False)
     df.to_parquet(OUT_DIR / "chunks.parquet", index=False)

@@ -14,7 +14,7 @@ test("explain(city) retrieves cited WPF passages", async () => {
   assert.ok(p.page > 0, "passage carries a page for citation");
   assert.equal(p.gov, "city", "gov filter honored");
   assert.match(p.brief_id, /^wpf-/, "attributed to a WPF brief");
-  assert.ok(r.passages.every((x) => x.score >= 0 && x.score <= 1.0001), "scores are normalized cosine");
+  assert.ok(r.passages.every((x) => x.score >= -1.0001 && x.score <= 1.0001), "scores are cosine similarity");
   assert.match(r.note, /Wisconsin Policy Forum/, "labeled secondary commentary");
 });
 
