@@ -3,15 +3,8 @@
 import { useRenderTool } from "@copilotkit/react-core/v2";
 import { z } from "zod";
 import { BudgetBreakdownCard } from "@/components/generative/BudgetBreakdownCard";
-
-// Inline, client-safe params schema for the renderer. It only types props.parameters
-// (unused here) — importing the real shape from @mke/budget-tools would pull the
-// package's barrel (db.ts → pg) into the client bundle. Renderers match by NAME.
-const budgetBreakdownParams = z.object({
-  gov: z.enum(["city", "county", "mps"]).optional(),
-  fiscal_year: z.number().optional(),
-  dept: z.string().optional(),
-});
+import { BiggestChangesCard } from "@/components/generative/BiggestChangesCard";
+import { DepartmentBudgetCard } from "@/components/generative/DepartmentBudgetCard";
 
 // Friendly labels for the budget tools, shown as the copilot works.
 const TOOL_LABELS: Record<string, string> = {
@@ -42,32 +35,65 @@ function ToolChip({ name, status }: { name: string; status: string }) {
   );
 }
 
+// props.result is a JSON string of the tool's return value.
+function parseResult(props: any): any {
+  if (props.status !== "complete") return undefined;
+  try {
+    return typeof props.result === "string" ? JSON.parse(props.result) : props.result;
+  } catch {
+    return null;
+  }
+}
+
+// Inline, client-safe param schemas (typing only). Importing the real shapes from
+// @mke/budget-tools would pull its barrel (db.ts → pg) into the client bundle.
+const anyParams = z.object({}).passthrough();
+
 /**
- * CopilotKit v2 tool-call renderers.
- * - budget_breakdown → a real chart + right-aligned table card (generative UI).
- * - everything else → a status chip (wildcard fallback).
- * Mounted inside <CopilotKit>. Renders nothing itself (registration only).
+ * CopilotKit v2 tool-call renderers. Name-scoped renderers turn tool results into
+ * cited chart/table/stat cards; the wildcard shows a status chip for the rest.
+ * Mounted inside <CopilotKit>; renders nothing itself (registration only).
  */
 export function ToolRenderers() {
-  // Name-scoped: render budget_breakdown results as a cited chart + table card.
   useRenderTool(
     {
       name: "budget_breakdown",
-      parameters: budgetBreakdownParams,
+      parameters: anyParams,
       render: (props: any) => {
+        const r = parseResult(props);
         if (props.status !== "complete") return <ToolChip name="budget_breakdown" status={props.status} />;
-        // props.result is a JSON string of the tool's return value.
-        let result: unknown;
-        try {
-          result = typeof props.result === "string" ? JSON.parse(props.result) : props.result;
-        } catch {
-          result = null;
-        }
-        // Ambiguous / error / unexpected shape → fall back to a chip.
-        if (!result || typeof result !== "object" || (!("breakdown" in result) && !("people_costs" in result))) {
+        if (!r || typeof r !== "object" || (!("breakdown" in r) && !("people_costs" in r))) {
           return <ToolChip name="budget_breakdown" status="complete" />;
         }
-        return <BudgetBreakdownCard data={result as never} />;
+        return <BudgetBreakdownCard data={r as never} />;
+      },
+    },
+    [],
+  );
+
+  useRenderTool(
+    {
+      name: "biggest_changes",
+      parameters: anyParams,
+      render: (props: any) => {
+        const r = parseResult(props);
+        if (props.status !== "complete") return <ToolChip name="biggest_changes" status={props.status} />;
+        if (!r || !Array.isArray(r.results)) return <ToolChip name="biggest_changes" status="complete" />;
+        return <BiggestChangesCard data={r as never} />;
+      },
+    },
+    [],
+  );
+
+  useRenderTool(
+    {
+      name: "get_department_budget",
+      parameters: anyParams,
+      render: (props: any) => {
+        const r = parseResult(props);
+        if (props.status !== "complete") return <ToolChip name="get_department_budget" status={props.status} />;
+        if (!r || typeof r !== "object") return <ToolChip name="get_department_budget" status="complete" />;
+        return <DepartmentBudgetCard data={r} />;
       },
     },
     [],
