@@ -5,7 +5,7 @@ import pg from "pg";
 import dotenv from "dotenv";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: resolve(__dirname, "../../.env") });
+dotenv.config({ path: resolve(__dirname, "../../../.env") });
 
 const url = process.env.MCP_DATABASE_URL;
 if (!url) {
