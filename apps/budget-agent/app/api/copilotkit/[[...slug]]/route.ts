@@ -27,6 +27,14 @@ const agent = new BuiltInAgent({
   prompt: systemPrompt,
   tools: serverTools,
   maxSteps: 6, // 4–6 step "find the story" investigations
+  // Prompt-injection posture (explicit, not relying on defaults): our system
+  // prompt is static and never concatenated with user input, and we do NOT
+  // forward user-supplied system/developer-role messages to the model — so a
+  // user can't smuggle in system instructions. Combined with read-only,
+  // SELECT-only tools over public budget data, the blast radius of a jailbreak
+  // is "the bot says something off-persona", never data loss or exfiltration.
+  forwardSystemMessages: false,
+  forwardDeveloperMessages: false,
 });
 
 const budgetRuntime = new CopilotRuntime({ agents: { default: agent } });
