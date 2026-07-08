@@ -2,10 +2,11 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import {
-  query, guardSelect, runSql, describeSchema, lookupGlossary, citations, num, resolveDept,
-  grandTotalPred, deptYear, pct, YEAR_KIND, ROLLUP_EXCLUDE, STAGE_ORDER,
+  query, guardSelect, runSql, describeSchema, lookupGlossary, citations, num, resolveDept, pct,
   listDepartments, getDepartmentBudget, budgetBreakdown,
+  compareYears, traceAdoption, biggestChanges, getPositions, findPositions,
   listDepartmentsShape, getDepartmentBudgetShape, budgetBreakdownShape,
+  compareYearsShape, traceAdoptionShape, biggestChangesShape, getPositionsShape, findPositionsShape,
 } from "@mke/budget-tools";
 
 const server = new McpServer({ name: "mke-budget", version: "0.1.0" });
@@ -88,30 +89,9 @@ server.registerTool(
   {
     title: "Get positions",
     description: "Position lines for a department: titles, pay ranges, FTE, footnote flags — cited.",
-    inputSchema: {
-      dept: z.string(), gov: z.enum(["city", "county", "mps"]).default("city"),
-      fiscal_year: z.number().int().default(2026),
-    },
+    inputSchema: getPositionsShape,
   },
-  async ({ dept, gov }) => {
-    const cands = await resolveDept(gov, dept);
-    if (cands.length === 0) return fail(`No department matches "${dept}".`);
-    if (cands.length > 1) return ok({ ambiguous: true, candidates: cands });
-    const rows = await query(
-      `SELECT line_description, pay_range, units, flags, amount, division, source_page, doc_id
-         FROM fact_budget_line
-        WHERE dept_id=$1 AND line_kind='position' AND amount_kind='adopted'
-        ORDER BY amount DESC NULLS LAST LIMIT 100`, [cands[0].dept_id]);
-    const total_fte = rows.reduce((s, r) => s + Number(r.units ?? 0), 0);
-    return ok({
-      department: cands[0].canonical_name, position_rows: rows.length, total_units: total_fte,
-      positions: rows.map((r) => ({
-        title: r.line_description, pay_range: r.pay_range, units: num(r.units),
-        salary: num(r.amount), division: r.division, flags: r.flags, page: r.source_page,
-      })),
-      citations: citations(rows),
-    });
-  },
+  async (a) => wrap(() => getPositions(a)),
 );
 
 server.registerTool(
@@ -192,31 +172,9 @@ server.registerTool(
   {
     title: "Compare years",
     description: "Department reserved-code totals for two fiscal years, with $ and % deltas. Cited.",
-    inputSchema: {
-      dept: z.string(), year_a: z.number().int(), year_b: z.number().int(),
-      gov: z.enum(["city", "county", "mps"]).default("city"),
-    },
+    inputSchema: compareYearsShape,
   },
-  async ({ dept, year_a, year_b, gov }) => {
-    const cands = await resolveDept(gov, dept);
-    if (cands.length === 0) return fail(`No department matches "${dept}".`);
-    if (cands.length > 1) return ok({ ambiguous: true, candidates: cands });
-    const id = cands[0].dept_id;
-    const [A, B] = [await deptYear(id, year_a, gov), await deptYear(id, year_b, gov)];
-    if (A.cites.length === 0 || B.cites.length === 0)
-      return fail(`Missing data for ${A.cites.length === 0 ? year_a : year_b} — loaded years may differ.`);
-    const line = (k: string) => {
-      const from = num(A.a[k]), to = num(B.a[k]);
-      return { [`fy${year_a}`]: from, [`fy${year_b}`]: to,
-               delta: from != null && to != null ? to - from : null, delta_pct: pct(from, to) };
-    };
-    return ok({
-      department: cands[0].canonical_name,
-      grand_total: line("grand"), net_salaries: line("net_salaries"),
-      fringe: line("fringe"), operating: line("operating"), equipment: line("equipment"),
-      citations: citations([...A.cites, ...B.cites]),
-    });
-  },
+  async (a) => wrap(() => compareYears(a)),
 );
 
 server.registerTool(
@@ -224,37 +182,9 @@ server.registerTool(
   {
     title: "Trace adoption",
     description: "A department's budget through the stages present for a fiscal year (requested → proposed/recommended → adopted), with stage deltas.",
-    inputSchema: {
-      dept: z.string(), fiscal_year: z.number().int(),
-      gov: z.enum(["city", "county", "mps"]).default("city"),
-    },
+    inputSchema: traceAdoptionShape,
   },
-  async ({ dept, fiscal_year, gov }) => {
-    const cands = await resolveDept(gov, dept);
-    if (cands.length === 0) return fail(`No department matches "${dept}".`);
-    if (cands.length > 1) return ok({ ambiguous: true, candidates: cands });
-    const rows = await query(
-      `SELECT amount_kind, MAX(amount) AS grand, MIN(doc_id) AS doc_id, MIN(source_page) AS source_page
-         FROM fact_budget_line
-        WHERE dept_id=$1 AND fiscal_year=$2 AND ${grandTotalPred()}
-        GROUP BY amount_kind`, [cands[0].dept_id, fiscal_year]);
-    const present = STAGE_ORDER
-      .map((k) => rows.find((r) => r.amount_kind === k))
-      .filter(Boolean) as any[];
-    let prev: number | null = null;
-    const stages = present.map((r) => {
-      const g = num(r.grand);
-      const step = { stage: r.amount_kind, grand_total: g,
-                     change_from_prev: prev != null && g != null ? g - prev : null };
-      prev = g;
-      return step;
-    });
-    return ok({
-      department: cands[0].canonical_name, fiscal_year, stages,
-      note: stages.length <= 1 ? "Only one budget stage is loaded for this year so far." : undefined,
-      citations: citations(present),
-    });
-  },
+  async (a) => wrap(() => traceAdoption(a)),
 );
 
 server.registerTool(
@@ -282,50 +212,9 @@ server.registerTool(
   {
     title: "Biggest changes between years",
     description: "The departments whose budgets changed the most between two fiscal years — the story-finder. Ranked by $ or %, with citations.",
-    inputSchema: {
-      gov: z.enum(["city", "county", "mps"]).default("city"),
-      year_a: z.number().int(), year_b: z.number().int(),
-      measure: z.enum(["dollars", "percent"]).default("dollars"),
-      direction: z.enum(["up", "down", "both"]).default("both"),
-      limit: z.number().int().max(40).default(12),
-    },
+    inputSchema: biggestChangesShape,
   },
-  async ({ gov, year_a, year_b, measure, direction, limit }) => {
-    // MPS totals are SUM-over-line-items; city/county are MAX-over-printed-total.
-    const yearAgg = (yr: string) =>
-      gov === "mps"
-        ? `SUM(f.amount) FILTER (WHERE f.line_kind='expenditure' AND f.fiscal_year=${yr})`
-        : `MAX(f.amount) FILTER (WHERE ${grandTotalPred("f.")} AND f.fiscal_year=${yr})`;
-    const yearPred = gov === "mps"
-      ? `f.line_kind='expenditure' AND f.fiscal_year=$3`
-      : `${grandTotalPred("f.")} AND f.fiscal_year=$3`;
-    const rows = await query(
-      `SELECT d.canonical_name AS dept,
-         ${yearAgg("$2")} a,
-         ${yearAgg("$3")} b,
-         MIN(f.source_page) FILTER (WHERE ${yearPred}) page,
-         MIN(f.doc_id)      FILTER (WHERE ${yearPred}) doc_id
-       FROM fact_budget_line f JOIN dim_department d USING (dept_id)
-       WHERE d.gov_id=$1 GROUP BY d.canonical_name`, [gov, year_a, year_b]);
-    let items = rows
-      .filter((r) => r.a != null && r.b != null)
-      .map((r) => {
-        const a = Number(r.a), b = Number(r.b);
-        return { department: r.dept, [`fy${year_a}`]: a, [`fy${year_b}`]: b,
-                 delta: b - a, delta_pct: Math.round(((b - a) / a) * 1000) / 10,
-                 doc_id: r.doc_id, source_page: r.page };
-      });
-    if (direction === "up") items = items.filter((i) => i.delta > 0);
-    if (direction === "down") items = items.filter((i) => i.delta < 0);
-    const key = measure === "percent" ? "delta_pct" : "delta";
-    items.sort((x: any, y: any) => Math.abs(y[key]) - Math.abs(x[key]));
-    const top = items.slice(0, limit);
-    return ok({
-      gov, comparing: `fy${year_a} → fy${year_b}`, measure, direction,
-      results: top.map(({ doc_id, source_page, ...rest }) => rest),
-      citations: citations(top),
-    });
-  },
+  async (a) => wrap(() => biggestChanges(a)),
 );
 
 server.registerTool(
@@ -333,41 +222,9 @@ server.registerTool(
   {
     title: "Find positions",
     description: "Search city positions by title, minimum salary, or footnote flag (e.g. grant-funded). 'Who earns over $150K', 'grant-funded positions'. Cited.",
-    inputSchema: {
-      query: z.string().optional(), gov: z.enum(["city", "county", "mps"]).default("city"),
-      fiscal_year: z.number().int().default(2026),
-      min_salary: z.number().optional(), flag: z.string().optional(),
-      limit: z.number().int().max(50).default(25),
-    },
+    inputSchema: findPositionsShape,
   },
-  async ({ query: q, gov, fiscal_year, min_salary, flag, limit }) => {
-    const kind = YEAR_KIND[fiscal_year] ?? "adopted";
-    const where = ["f.line_kind='position'", "d.gov_id=$1", "f.fiscal_year=$2", "f.amount_kind=$3",
-      // exclude wrapped-position continuation rows whose title is only footnote codes
-      "(f.line_description ~ ' ' OR f.line_description ~ '[a-z]')"];
-    const params: any[] = [gov, fiscal_year, kind];
-    if (q) { params.push(q); where.push(`f.search @@ plainto_tsquery('english',$${params.length})`); }
-    // A position line can budget several incumbents; per-position salary is amount/units.
-    if (min_salary != null) { params.push(min_salary); where.push(`f.amount / NULLIF(f.units,0) >= $${params.length}`); }
-    if (flag) { params.push(flag); where.push(`$${params.length} = ANY(f.flags)`); }
-    params.push(limit);
-    const rows = await query(
-      `SELECT f.line_id, d.canonical_name AS dept, f.division, f.line_description, f.pay_range,
-              f.amount, f.units, f.flags, f.source_page, f.doc_id,
-              f.amount / NULLIF(f.units,0) AS per_position
-         FROM fact_budget_line f JOIN dim_department d USING (dept_id)
-        WHERE ${where.join(" AND ")}
-        ORDER BY per_position DESC NULLS LAST LIMIT $${params.length}`, params);
-    return ok({
-      fiscal_year, matched: rows.length,
-      positions: rows.map((r) => ({
-        line_id: Number(r.line_id), title: r.line_description, department: r.dept, division: r.division,
-        pay_range: r.pay_range, salary_per_position: num(r.per_position), count: num(r.units),
-        budgeted_total: num(r.amount), flags: r.flags, page: r.source_page,
-      })),
-      citations: citations(rows),
-    });
-  },
+  async (a) => wrap(() => findPositions(a)),
 );
 
 // --- MPS-specific tools (parents/students, journalists) --------------------- //

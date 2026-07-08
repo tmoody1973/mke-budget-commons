@@ -6,4 +6,6 @@ export * from "./schema.js";
 export * from "./queries/search.js";
 export * from "./queries/departments.js";
 export * from "./queries/breakdown.js";
+export * from "./queries/compare.js";
+export * from "./queries/positions.js";
 export * from "./schemas.js";
