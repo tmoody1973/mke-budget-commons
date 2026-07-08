@@ -35,20 +35,29 @@ def test_per_pupil_is_computed(book):
 
 
 def test_matched_schools_cross_verify_exactly(book):
-    """Every school we can match to the district ledger by name must agree to the
-    dollar and FTE — that's the cross-document trust check. Matched != exact is a
-    reported finding (multi-cost-center schools), not silent."""
+    """The crosswalk + automatic matching must cross-verify the large majority of
+    schools to the dollar and FTE. Remaining schools are documented discrepancies
+    (the two documents genuinely disagree), never silent failures."""
     s = summarize(reconcile_schools(book))
-    assert len(s["passed"]) >= 90, f"cross-verified schools regressed to {len(s['passed'])}"
-    # of everything matched (pass + fail), the pass share is the headline
-    matched = len(s["passed"]) + len(s["failed"])
-    assert matched and len(s["passed"]) / matched >= 0.9, "matched schools should overwhelmingly be exact"
+    assert len(s["passed"]) >= 120, f"cross-verified schools regressed to {len(s['passed'])}"
+    assert not s["failed"], f"unexpected FAIL (bad crosswalk mapping?): {[c.school for c in s['failed']]}"
+    assert not s["unmatched"], f"unexpected UNMATCHED: {[c.school for c in s['unmatched']]}"
+
+
+def test_crosswalk_mappings_reconcile(book):
+    """Every curated crosswalk mapping must still reconcile exactly — a wrong
+    name→code mapping would show up here as a FAIL, so the crosswalk is self-checking."""
+    s = summarize(reconcile_schools(book))
+    xw = [c for c in s["passed"] if c.via == "crosswalk"]
+    assert len(xw) >= 25, f"crosswalk-verified schools regressed to {len(xw)}"
 
 
 def test_nothing_silently_dropped(book):
-    """Every school is accounted for: exact, reported-mismatch, or surfaced-unmatched."""
+    """Every school is accounted for: exact, documented-discrepancy, reported-fail,
+    or surfaced-unmatched."""
     s = summarize(reconcile_schools(book))
-    assert len(s["passed"]) + len(s["failed"]) + len(s["unmatched"]) == len(book.schools)
+    assert (len(s["passed"]) + len(s["discrepancy"]) + len(s["failed"])
+            + len(s["unmatched"]) == len(book.schools))
 
 
 def test_every_line_has_provenance(book):

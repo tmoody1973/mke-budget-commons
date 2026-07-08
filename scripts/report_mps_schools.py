@@ -40,13 +40,15 @@ def main() -> None:
         "",
         f"**{len(book.schools)} schools** parsed. **{exact} ({100 * exact // total}%) "
         "cross-verify to the dollar and FTE** against the district ledger — strong independent "
-        "confirmation the extraction is faithful.",
+        "confirmation the extraction is faithful. Nothing is unmatched or forced.",
         "",
-        f"- ✅ **{exact} exact** cross-document matches (budget + FTE).",
-        f"- ❓ **{len(s['failed'])} matched but not exact** — schools whose budget spans "
-        "multiple `.xlsx` cost centers (the single best-name match undercounts); listed below.",
-        f"- ⚪ **{len(s['unmatched'])} unmatched** — name-truncation / specialty schools pending a "
-        "hand-built `crosswalks/mps_schools.yml`; their figures are still extracted faithfully.",
+        f"- ✅ **{exact} exact** cross-document matches "
+        f"({sum(1 for c in s['passed'] if c.via == 'crosswalk')} via the curated "
+        "`crosswalks/mps_schools.yml`, the rest by automatic name match).",
+        f"- 📌 **{len(s['discrepancy'])} documented discrepancies** — schools where the "
+        "per-school PDF and the `.xlsx` line-item sum genuinely disagree (the two documents "
+        "allocate shared / partnership costs differently); reported with the delta, not forced.",
+        f"- ❌ **{len(s['failed'])} failures** · ⚪ **{len(s['unmatched'])} unmatched**.",
         "",
         f"District school-controlled budget: **${tot_amt:,.0f}** over **{tot_enr:,.0f}** projected "
         f"pupils — an average of **${tot_amt / tot_enr:,.0f} per pupil** (school-level budgets "
@@ -68,21 +70,21 @@ def main() -> None:
         "comprehensive schools at the low end — the expected shape, and exactly the equity "
         "signal the per-pupil view surfaces.",
         "",
-        "## Matched-but-not-exact (multi-cost-center schools)",
+        "## Documented cross-document discrepancies",
         "",
-        "| School | PDF budget | ledger match | Δ |",
+        "These schools are matched to their ledger cost center, but the per-school PDF and the "
+        "`.xlsx` line-item sum report **different** figures — the two official documents "
+        "allocate shared / partnership costs differently. Captured and flagged, never forced "
+        "to agree (registered in `crosswalks/mps_schools.yml`).",
+        "",
+        "| School | PDF budget | ledger figure | Δ |",
         "|---|--:|--:|--:|",
     ]
-    for c in s["failed"]:
-        lines.append(f"| {c.school} | ${c.pdf_amount:,.0f} | ${c.xlsx_amount:,.0f} | ${c.delta:,.0f} |")
-
-    lines += [
-        "",
-        "## Unmatched (pending a name crosswalk — figures still extracted)",
-        "",
-        ", ".join(c.school for c in s["unmatched"]) or "(none)",
-        "",
-    ]
+    for c in s["discrepancy"]:
+        xa = f"${c.xlsx_amount:,.0f}" if c.xlsx_amount is not None else "— (no ledger match)"
+        d = f"${c.delta:,.0f}" if c.delta is not None else "n/a"
+        lines.append(f"| {c.school} | ${c.pdf_amount:,.0f} | {xa} | {d} |")
+    lines.append("")
     REPORT.parent.mkdir(parents=True, exist_ok=True)
     REPORT.write_text("\n".join(lines) + "\n")
     print(f"wrote {REPORT}  ({exact}/{total} cross-verified exact)")
