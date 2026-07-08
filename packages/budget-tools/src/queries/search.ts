@@ -1,8 +1,8 @@
-import { query, guardSelect } from "../db.js";
-import { citations, num } from "../citation.js";
-import { type Gov } from "../helpers.js";
-import { lookupGlossary } from "../glossary.js";
-import type { RunSqlResult, SearchResults, Cite, ReconciliationStatus, GlossaryResult } from "../types.js";
+import { query, guardSelect } from "../db";
+import { citations, num } from "../citation";
+import { type Gov } from "../helpers";
+import { lookupGlossary } from "../glossary";
+import type { RunSqlResult, SearchResults, Cite, ReconciliationStatus, GlossaryResult } from "../types";
 
 export async function runSql(a: { query: string; limit?: number }): Promise<RunSqlResult> {
   const sql = guardSelect(a.query, a.limit ?? 200); // throws on invalid input

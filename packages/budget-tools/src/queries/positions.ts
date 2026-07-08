@@ -1,7 +1,7 @@
-import { query } from "../db.js";
-import { citations, num } from "../citation.js";
-import { resolveDept, YEAR_KIND, type Gov } from "../helpers.js";
-import type { Ambiguous, Positions, FindPositions } from "../types.js";
+import { query } from "../db";
+import { citations, num } from "../citation";
+import { resolveDept, YEAR_KIND, type Gov } from "../helpers";
+import type { Ambiguous, Positions, FindPositions } from "../types";
 
 export async function getPositions(a: { dept: string; gov: Gov; fiscal_year?: number }): Promise<Positions | Ambiguous> {
   const { dept, gov } = a;

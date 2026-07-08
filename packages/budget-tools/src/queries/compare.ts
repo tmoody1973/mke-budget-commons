@@ -1,7 +1,7 @@
-import { query } from "../db.js";
-import { citations, num } from "../citation.js";
-import { resolveDept, grandTotalPred, deptYear, pct, STAGE_ORDER, type Gov } from "../helpers.js";
-import type { Ambiguous, CompareYears, TraceAdoption, BiggestChanges } from "../types.js";
+import { query } from "../db";
+import { citations, num } from "../citation";
+import { resolveDept, grandTotalPred, deptYear, pct, STAGE_ORDER, type Gov } from "../helpers";
+import type { Ambiguous, CompareYears, TraceAdoption, BiggestChanges } from "../types";
 
 export async function compareYears(a: { dept: string; year_a: number; year_b: number; gov: Gov }): Promise<CompareYears | Ambiguous> {
   const { dept, year_a, year_b, gov } = a;

@@ -4,8 +4,8 @@
 // function in src/queries/*.ts actually returns today — no invented fields.
 // Gov-specific branches that return different shapes are modeled as unions.
 
-import type { Gov } from "./helpers.js";
-import type { GlossaryEntry } from "./glossary.js";
+import type { Gov } from "./helpers";
+import type { GlossaryEntry } from "./glossary";
 
 export type CitationRef = { doc_id: string; source_page: number };
 

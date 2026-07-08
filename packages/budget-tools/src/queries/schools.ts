@@ -1,7 +1,7 @@
-import { query } from "../db.js";
-import { citations, num } from "../citation.js";
-import { resolveDept, pct } from "../helpers.js";
-import type { CompareSchools, CompareSchoolSide, MpsFundSummary, PerPupilRanking } from "../types.js";
+import { query } from "../db";
+import { citations, num } from "../citation";
+import { resolveDept, pct } from "../helpers";
+import type { CompareSchools, CompareSchoolSide, MpsFundSummary, PerPupilRanking } from "../types";
 
 export async function compareSchools(a: { school_a: string; school_b: string; fiscal_year: number }): Promise<CompareSchools> {
   const { school_a, school_b, fiscal_year } = a;

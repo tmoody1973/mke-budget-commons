@@ -1,7 +1,7 @@
-import { query } from "../db.js";
-import { citations, num } from "../citation.js";
-import { resolveDept, VINTAGE, grandTotalPred, type Gov } from "../helpers.js";
-import type { Ambiguous, DepartmentList, CityDeptBudget, CountyDeptBudget, MpsSchoolBudget } from "../types.js";
+import { query } from "../db";
+import { citations, num } from "../citation";
+import { resolveDept, VINTAGE, grandTotalPred, type Gov } from "../helpers";
+import type { Ambiguous, DepartmentList, CityDeptBudget, CountyDeptBudget, MpsSchoolBudget } from "../types";
 
 export async function listDepartments(a: { gov: Gov; fiscal_year?: number }): Promise<DepartmentList> {
   const { gov, fiscal_year } = a;

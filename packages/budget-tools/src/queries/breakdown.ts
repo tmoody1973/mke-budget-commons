@@ -1,7 +1,7 @@
-import { query } from "../db.js";
-import { citations, num } from "../citation.js";
-import { resolveDept, grandTotalPred, ROLLUP_EXCLUDE, type Gov } from "../helpers.js";
-import type { Ambiguous, CityBreakdown, CountyBreakdown, MpsBreakdown } from "../types.js";
+import { query } from "../db";
+import { citations, num } from "../citation";
+import { resolveDept, grandTotalPred, ROLLUP_EXCLUDE, type Gov } from "../helpers";
+import type { Ambiguous, CityBreakdown, CountyBreakdown, MpsBreakdown } from "../types";
 
 // County "where the money goes": the category breakdown (Personnel + Operations
 // + Debt & Depreciation + Interdepartmental = Total Expenditures), per department
