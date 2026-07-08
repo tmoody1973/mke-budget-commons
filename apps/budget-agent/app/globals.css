@@ -1,6 +1,8 @@
 @import "tailwindcss";
+/* HeroUI base theme (colors: content1, default-*, secondary-*, warning-*, …). The
+   licensed @heroui-pro/react/css is intentionally NOT imported — no Pro components
+   are used, and it isn't installable in CI/Vercel (GitHub-OAuth registry). */
 @import "@heroui/styles/css";
-@import "@heroui-pro/react/css";
 
 @source "../**/*.{ts,tsx}";
 
