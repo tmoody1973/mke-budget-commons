@@ -43,7 +43,7 @@ export function BiggestChangesCard({ data }: { data: BiggestChanges }) {
       </div>
 
       {/* Diverging bar chart of the dollar deltas */}
-      <div className="w-full" style={{ height: Math.max(120, chartRows.length * 26) }} data-figure="changes-chart">
+      <div className="w-full" style={{ height: Math.max(160, chartRows.length * 30) }} data-figure="changes-chart">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartRows} layout="vertical" margin={{ top: 0, right: 12, bottom: 0, left: 0 }}>
             <XAxis type="number" tickFormatter={(v) => usdCompact(Number(v))} tick={{ fontSize: 10 }} stroke="#94a3b8" />
@@ -60,8 +60,8 @@ export function BiggestChangesCard({ data }: { data: BiggestChanges }) {
       </div>
 
       {/* Right-aligned table */}
-      <div className="mt-2 max-h-64 overflow-auto">
-        <table className="w-full text-xs" data-figure="changes-table">
+      <div className="mt-2 max-h-80 overflow-auto">
+        <table className="w-full text-sm" data-figure="changes-table">
           <thead className="sticky top-0 bg-content1">
             <tr className="border-b border-default-200 text-default-500">
               <th className="py-1 text-left font-medium">Department</th>

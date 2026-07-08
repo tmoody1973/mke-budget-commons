@@ -1,5 +1,8 @@
 @import "tailwindcss";
-@import "@heroui/styles";
+@import "@heroui/styles/css";
+@import "@heroui-pro/react/css";
+
+@source "../**/*.{ts,tsx}";
 
 @theme inline {
   --font-sans: var(--font-geist-sans);

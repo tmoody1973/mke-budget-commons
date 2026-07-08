@@ -66,7 +66,7 @@ export function BudgetBreakdownCard({ data }: { data: BudgetBreakdown }) {
       </div>
 
       {/* Chart */}
-      <div className="h-[180px] w-full" data-figure="breakdown-chart">
+      <div className="h-[210px] w-full" data-figure="breakdown-chart">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={rows} layout="vertical" margin={{ top: 0, right: 12, bottom: 0, left: 0 }}>
             <XAxis type="number" tickFormatter={(v) => usdCompact(Number(v))} tick={{ fontSize: 10 }} stroke="#94a3b8" />
@@ -86,7 +86,7 @@ export function BudgetBreakdownCard({ data }: { data: BudgetBreakdown }) {
       </div>
 
       {/* Right-aligned table */}
-      <table className="mt-2 w-full text-xs" data-figure="breakdown-table">
+      <table className="mt-2 w-full text-sm" data-figure="breakdown-table">
         <thead>
           <tr className="border-b border-default-200 text-default-500">
             <th className="py-1 text-left font-medium">Category</th>
