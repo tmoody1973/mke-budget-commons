@@ -1,8 +1,9 @@
-import { query } from "../db.js";
-import { citations, num } from "../citation.js";
-import { resolveDept, grandTotalPred, deptYear, pct, STAGE_ORDER, type Gov } from "../helpers.js";
+import { query } from "../db";
+import { citations, num } from "../citation";
+import { resolveDept, grandTotalPred, deptYear, pct, STAGE_ORDER, type Gov } from "../helpers";
+import type { Ambiguous, CompareYears, TraceAdoption, BiggestChanges } from "../types";
 
-export async function compareYears(a: { dept: string; year_a: number; year_b: number; gov: Gov }): Promise<any> {
+export async function compareYears(a: { dept: string; year_a: number; year_b: number; gov: Gov }): Promise<CompareYears | Ambiguous> {
   const { dept, year_a, year_b, gov } = a;
   const cands = await resolveDept(gov, dept);
   if (cands.length === 0) throw new Error(`No department matches "${dept}".`);
@@ -24,7 +25,7 @@ export async function compareYears(a: { dept: string; year_a: number; year_b: nu
   };
 }
 
-export async function traceAdoption(a: { dept: string; fiscal_year: number; gov: Gov }): Promise<any> {
+export async function traceAdoption(a: { dept: string; fiscal_year: number; gov: Gov }): Promise<TraceAdoption | Ambiguous> {
   const { dept, fiscal_year, gov } = a;
   const cands = await resolveDept(gov, dept);
   if (cands.length === 0) throw new Error(`No department matches "${dept}".`);
@@ -55,7 +56,7 @@ export async function traceAdoption(a: { dept: string; fiscal_year: number; gov:
 export async function biggestChanges(a: {
   gov: Gov; year_a: number; year_b: number;
   measure: "dollars" | "percent"; direction: "up" | "down" | "both"; limit: number;
-}): Promise<any> {
+}): Promise<BiggestChanges> {
   const { gov, year_a, year_b, measure, direction, limit } = a;
   // MPS totals are SUM-over-line-items; city/county are MAX-over-printed-total.
   const yearAgg = (yr: string) =>

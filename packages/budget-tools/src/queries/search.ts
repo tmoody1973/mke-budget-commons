@@ -1,9 +1,10 @@
-import { query, guardSelect } from "../db.js";
-import { citations, num } from "../citation.js";
-import { type Gov } from "../helpers.js";
-import { lookupGlossary } from "../glossary.js";
+import { query, guardSelect } from "../db";
+import { citations, num } from "../citation";
+import { type Gov } from "../helpers";
+import { lookupGlossary } from "../glossary";
+import type { RunSqlResult, SearchResults, Cite, ReconciliationStatus, GlossaryResult } from "../types";
 
-export async function runSql(a: { query: string; limit?: number }): Promise<{ sql: string; row_count: number; rows: any[] }> {
+export async function runSql(a: { query: string; limit?: number }): Promise<RunSqlResult> {
   const sql = guardSelect(a.query, a.limit ?? 200); // throws on invalid input
   try {
     const rows = await query(sql);
@@ -13,7 +14,7 @@ export async function runSql(a: { query: string; limit?: number }): Promise<{ sq
   }
 }
 
-export async function searchLineItems(a: { query: string; gov?: Gov; fiscal_year?: number; limit: number }): Promise<any> {
+export async function searchLineItems(a: { query: string; gov?: Gov; fiscal_year?: number; limit: number }): Promise<SearchResults> {
   const { query: q, gov, fiscal_year, limit } = a;
   // Current-vintage per government: city/county adopt budgets; MPS proposes.
   // Without a gov filter, allow both so nothing is invisible.
@@ -44,7 +45,7 @@ export async function searchLineItems(a: { query: string; gov?: Gov; fiscal_year
   };
 }
 
-export async function cite(a: { line_id: number }): Promise<any> {
+export async function cite(a: { line_id: number }): Promise<Cite> {
   const { line_id } = a;
   const rows = await query(
     `SELECT f.*, doc.source_url, doc.fiscal_year, doc.doc_type, dep.canonical_name AS department
@@ -63,7 +64,7 @@ export async function cite(a: { line_id: number }): Promise<any> {
   };
 }
 
-export async function reconciliationStatus(a: { doc_id?: string }): Promise<any> {
+export async function reconciliationStatus(a: { doc_id?: string }): Promise<ReconciliationStatus> {
   const { doc_id } = a;
   const p = doc_id ? [doc_id] : [];
   const w = doc_id ? "WHERE doc_id=$1" : "";
@@ -87,7 +88,7 @@ export async function reconciliationStatus(a: { doc_id?: string }): Promise<any>
   };
 }
 
-export function glossaryLookup(a: { term?: string }) {
+export function glossaryLookup(a: { term?: string }): GlossaryResult {
   return lookupGlossary(a.term);
 }
 

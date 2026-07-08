@@ -1,8 +1,9 @@
-import { query } from "../db.js";
-import { citations, num } from "../citation.js";
-import { resolveDept, YEAR_KIND, type Gov } from "../helpers.js";
+import { query } from "../db";
+import { citations, num } from "../citation";
+import { resolveDept, YEAR_KIND, type Gov } from "../helpers";
+import type { Ambiguous, Positions, FindPositions } from "../types";
 
-export async function getPositions(a: { dept: string; gov: Gov; fiscal_year?: number }): Promise<any> {
+export async function getPositions(a: { dept: string; gov: Gov; fiscal_year?: number }): Promise<Positions | Ambiguous> {
   const { dept, gov } = a;
   const cands = await resolveDept(gov, dept);
   if (cands.length === 0) throw new Error(`No department matches "${dept}".`);
@@ -26,7 +27,7 @@ export async function getPositions(a: { dept: string; gov: Gov; fiscal_year?: nu
 export async function findPositions(a: {
   query?: string; gov: Gov; fiscal_year: number;
   min_salary?: number; flag?: string; limit: number;
-}): Promise<any> {
+}): Promise<FindPositions> {
   const { query: q, gov, fiscal_year, min_salary, flag, limit } = a;
   const kind = YEAR_KIND[fiscal_year] ?? "adopted";
   const where = ["f.line_kind='position'", "d.gov_id=$1", "f.fiscal_year=$2", "f.amount_kind=$3",

@@ -1,11 +1,12 @@
-import { query } from "../db.js";
-import { citations, num } from "../citation.js";
-import { resolveDept, pct } from "../helpers.js";
+import { query } from "../db";
+import { citations, num } from "../citation";
+import { resolveDept, pct } from "../helpers";
+import type { CompareSchools, CompareSchoolSide, MpsFundSummary, PerPupilRanking } from "../types";
 
-export async function compareSchools(a: { school_a: string; school_b: string; fiscal_year: number }): Promise<any> {
+export async function compareSchools(a: { school_a: string; school_b: string; fiscal_year: number }): Promise<CompareSchools> {
   const { school_a, school_b, fiscal_year } = a;
   const fy = fiscal_year === 2026 ? 2026 : 2027;
-  const side = async (name: string) => {
+  const side = async (name: string): Promise<CompareSchoolSide> => {
     const c = await resolveDept("mps", name);
     if (c.length === 0) return { query: name, error: `No MPS school/office matches "${name}".` };
     if (c.length > 1) return { query: name, ambiguous: c.map((x) => x.canonical_name).slice(0, 8) };
@@ -29,7 +30,7 @@ export async function compareSchools(a: { school_a: string; school_b: string; fi
     note: "MPS school totals are the sum of their line items; enrollment/per-pupil is not in this dataset." };
 }
 
-export async function mpsFundSummary(a: { fiscal_year: number }): Promise<any> {
+export async function mpsFundSummary(a: { fiscal_year: number }): Promise<MpsFundSummary> {
   const { fiscal_year } = a;
   const fy = fiscal_year === 2026 ? 2026 : 2027;
   const funds = await query(
@@ -56,7 +57,7 @@ export async function mpsFundSummary(a: { fiscal_year: number }): Promise<any> {
 
 export async function perPupilRanking(a: {
   fiscal_year: number; order: "highest" | "lowest"; min_enrollment: number; limit: number;
-}): Promise<any> {
+}): Promise<PerPupilRanking> {
   const { fiscal_year, order, min_enrollment, limit } = a;
   const fy = fiscal_year === 2026 ? 2026 : 2027;
   const rows = await query(
