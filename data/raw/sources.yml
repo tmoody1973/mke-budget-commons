@@ -12,7 +12,7 @@ documents:
     pages: 269
     text_layer: native          # clean, no OCR
     retrieved_on: 2026-07-07
-    sha256: TODO
+    sha256: f188c481eb7f9fc2c4607ad5af7e9113f782d69e1d4dcbbf01f66ebc8caf5650
 
   - doc_id: city-2026-adopted-summary
     gov: city
@@ -24,7 +24,7 @@ documents:
     pages: 218
     text_layer: native
     retrieved_on: 2026-07-07
-    sha256: TODO
+    sha256: a2f31c0f07f1a7a85d680613333aa967a998ebb110ff417d57a36e9a70ae748b
 
   - doc_id: city-2027-requested-detailed
     gov: city
@@ -36,7 +36,7 @@ documents:
     pages: 463
     text_layer: native
     retrieved_on: 2026-07-07
-    sha256: TODO
+    sha256: 2d5c849aa6f89bf2db96b75b7e090996d4f1d72968f85537892ff4116aeeef3b
 
   - doc_id: county-2026-adopted-operating
     gov: county
@@ -48,7 +48,7 @@ documents:
     pages: 442
     text_layer: native
     retrieved_on: 2026-07-07
-    sha256: TODO
+    sha256: c905f188ce6f3e45fefe0a64afbab23db5858ccf1917c77f4932620e4588a9c9
 
   - doc_id: county-2026-adopted-capital
     gov: county
@@ -59,7 +59,7 @@ documents:
     pages: 333
     text_layer: ocr             # Acrobat Paper Capture — NOT reconciliation-grade. Phase 5+.
     retrieved_on: 2026-07-07
-    sha256: TODO
+    sha256: 694c5a63cd3d4cca5e0598779e96a3ef6c4bd6d210438ffa6343a76572c433e7
 
   # --- Milwaukee Public Schools (gov=mps) — FY2026-27 Revised Proposed Budget ---
   # The .xlsx line-item detail is the reconcilable core (structured, deterministic,
