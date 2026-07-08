@@ -20,7 +20,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         </Suspense>
         {children}
       </div>
-      <CopilotSidebar />
+      <CopilotSidebar labels={{ modalHeaderTitle: "Budget Analyst" }} />
     </CopilotKit>
   );
 }
