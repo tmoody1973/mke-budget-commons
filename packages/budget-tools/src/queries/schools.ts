@@ -77,7 +77,7 @@ export async function perPupilRanking(a: {
     fiscal_year: fy, order, min_enrollment, schools_ranked: schools.length,
     district_median_per_pupil: ppVals.length ? ppVals[Math.floor(ppVals.length / 2)] : null,
     results: top.map(({ doc_id, source_page, ...rest }) => rest),
-    citations: citations(top),
+    citations: await citations(top),
     note: "Per pupil = school-controlled budget ÷ projected enrollment. Small specialty/"
       + "alternative schools naturally sit high (tiny denominators) — use min_enrollment to "
       + "focus on comprehensive schools. School budgets exclude central/districtwide costs.",

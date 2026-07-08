@@ -7,7 +7,7 @@
 import type { Gov } from "./helpers";
 import type { GlossaryEntry } from "./glossary";
 
-export type CitationRef = { doc_id: string; source_page: number };
+export type CitationRef = { doc_id: string; source_page: number; locator?: "page" | "row" };
 
 export type Ambiguous = { ambiguous: true; candidates: { dept_id: string; canonical_name: string }[] };
 

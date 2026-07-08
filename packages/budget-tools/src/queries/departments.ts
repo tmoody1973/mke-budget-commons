@@ -90,7 +90,7 @@ export async function getDepartmentBudget(a: { dept: string; gov: Gov; fiscal_ye
     top_expenditures: top.map((t) => ({
       description: t.line_description, account: t.account, amount: num(t.amount), page: t.source_page,
     })),
-    citations: citations([...anchors, ...top]),
+    citations: await citations([...anchors, ...top]),
   };
 }
 
@@ -122,7 +122,7 @@ async function mpsSchoolBudget(cand: { dept_id: string; canonical_name: string }
       object: r.object, amount: num(r.amount), fte: num(r.fte), page: r.source_page,
     })),
     by_fund: byFund.map((r) => ({ fund: r.fund, amount: num(r.amount) })),
-    citations: citations(byObject),
+    citations: await citations(byObject),
     note: "MPS schools/offices are sets of line items (no printed per-school total); "
       + "the total is their sum. Object = Nature of Expenditure (Teacher, Para, Benefits, …). "
       + "Enrollment/per-pupil is not in this dataset (see the summary document).",
@@ -163,7 +163,7 @@ async function countyDeptBudget(cand: { dept_id: string; canonical_name: string 
     },
     fte: { full_time: num(agg.fte) },
     strategic_program_areas: programs.map((p) => p.division),
-    citations: citations(anchors),
+    citations: await citations(anchors),
     note: "County departments report category rollups (no per-position ledger). "
       + "Personnel + Operations + Debt & Depreciation + Interdepartmental = Total Expenditures; "
       + "Total Expenditures − Total Revenues = Tax Levy.",

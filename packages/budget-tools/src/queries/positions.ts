@@ -20,7 +20,7 @@ export async function getPositions(a: { dept: string; gov: Gov; fiscal_year?: nu
       title: r.line_description, pay_range: r.pay_range, units: num(r.units),
       salary: num(r.amount), division: r.division, flags: r.flags, page: r.source_page,
     })),
-    citations: citations(rows),
+    citations: await citations(rows),
   };
 }
 
@@ -53,6 +53,6 @@ export async function findPositions(a: {
       pay_range: r.pay_range, salary_per_position: num(r.per_position), count: num(r.units),
       budgeted_total: num(r.amount), flags: r.flags, page: r.source_page,
     })),
-    citations: citations(rows),
+    citations: await citations(rows),
   };
 }
