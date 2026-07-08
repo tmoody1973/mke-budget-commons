@@ -1,5 +1,5 @@
 .PHONY: help parse-city-detailed parse-city-book parse-county-operating reconcile \
-        load-neon mcp-install mcp-dev mcp-test clean
+        load-neon mcp-install mcp-dev mcp-test tools-test clean
 
 help:
 	@echo "MKE Budget Commons — targets:"
@@ -12,6 +12,7 @@ help:
 	@echo "  make mcp-install                                install the MCP server's node deps"
 	@echo "  make mcp-dev                                    run MCP server locally (stdio)"
 	@echo "  make mcp-test                                   smoke-test the MCP server end-to-end"
+	@echo "  make tools-test                                 run @mke/budget-tools unit/integration tests"
 	@echo "  make explainer                                  build the standalone public budget explainer"
 
 FY     ?= 2026
@@ -56,6 +57,9 @@ mcp-test:
 	cd mcp && node test/smoke.mjs
 	cd mcp && node test/smoke_county.mjs
 	cd mcp && node test/smoke_mps.mjs
+
+tools-test:
+	npm run -w @mke/budget-tools test
 
 explainer:
 	python -m scripts.build_explainer

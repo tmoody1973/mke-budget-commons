@@ -5,6 +5,13 @@ MCP SDK, stdio transport. Connects to Neon through a `SELECT`-only role (`mcp_ro
 `run_sql` is additionally guarded in code. Every substantive response carries a
 `citations` array of `{doc_id, source_page}` — no claim without a page.
 
+**Query logic lives in `@mke/budget-tools`** (`packages/budget-tools/`), the shared
+read-only query layer also consumed by `apps/budget-agent/`. `mcp/src/index.ts` is a
+thin registration adapter: it wraps those functions in the MCP `ok`/`fail` envelope and
+declares the Zod input shapes. The smoke tests below (`make mcp-test`) guard that
+contract end-to-end; `@mke/budget-tools`'s own unit tests (`make tools-test`) cover the
+query functions directly.
+
 ## Prereqs
 
 1. `make load-neon` — builds the Neon serving layer from repo Parquet and writes
