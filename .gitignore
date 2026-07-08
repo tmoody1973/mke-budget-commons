@@ -10,6 +10,9 @@ node_modules/
 # data/raw/**/*.pdf
 .playwright-mcp/
 
-# WPF budget briefs — copyrighted source PDFs (inputs for the Layer-2 context corpus;
-# the derived, attributed chunks are what gets committed, not the raw PDFs)
+# WPF budget briefs — copyrighted source PDFs (inputs for the Layer-2 context corpus).
 wi-policy-forum/
+# Derived WPF chunks contain ~the full brief text — keep them local too (rebuild via
+# `python -m parsers.wpf_briefs`); Neon holds them, and explain() serves short
+# attributed passages. Only the parser + counts-only QA report are committed.
+data/canonical/context/

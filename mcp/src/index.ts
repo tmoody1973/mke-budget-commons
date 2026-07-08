@@ -4,11 +4,11 @@ import {
   listDepartments, getDepartmentBudget, budgetBreakdown,
   compareYears, traceAdoption, biggestChanges, getPositions, findPositions,
   searchLineItems, cite, reconciliationStatus, glossaryLookup, runSql,
-  compareSchools, mpsFundSummary, perPupilRanking, getAmendments,
+  compareSchools, mpsFundSummary, perPupilRanking, getAmendments, explain,
   listDepartmentsShape, getDepartmentBudgetShape, budgetBreakdownShape,
   compareYearsShape, traceAdoptionShape, biggestChangesShape, getPositionsShape, findPositionsShape,
   searchLineItemsShape, citeShape, reconciliationStatusShape, glossaryShape, runSqlShape,
-  compareSchoolsShape, mpsFundSummaryShape, perPupilRankingShape,
+  compareSchoolsShape, mpsFundSummaryShape, perPupilRankingShape, explainShape,
 } from "@mke/budget-tools";
 
 const server = new McpServer({ name: "mke-budget", version: "0.1.0" });
@@ -185,6 +185,17 @@ server.registerTool(
     inputSchema: perPupilRankingShape,
   },
   async (a) => wrap(() => perPupilRanking(a)),
+);
+
+server.registerTool(
+  "explain",
+  {
+    title: "Explain (Wisconsin Policy Forum context)",
+    description:
+      "Semantic search over Wisconsin Policy Forum budget-brief commentary — qualitative wisdom, context, and framing to attribute (brief + page). SECONDARY source: never a source of figures; every dollar/FTE/% must still come from a reconciled budget tool.",
+    inputSchema: explainShape,
+  },
+  async (a) => wrap(() => explain(a)),
 );
 
 server.registerTool(

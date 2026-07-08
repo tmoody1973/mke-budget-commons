@@ -1,5 +1,5 @@
 .PHONY: help parse-city-detailed parse-city-book parse-county-operating reconcile \
-        load-neon mcp-install mcp-dev mcp-test tools-test clean
+        load-neon parse-wpf load-context mcp-install mcp-dev mcp-test tools-test clean
 
 help:
 	@echo "MKE Budget Commons — targets:"
@@ -46,6 +46,14 @@ reconcile:
 
 load-neon:
 	python -m db.load
+
+parse-wpf:
+	python -m parsers.wpf_briefs
+
+# Layer-2 context corpus → Neon pgvector (embeds locally). Run AFTER parse-wpf;
+# independent of load-neon (which never touches context_chunk).
+load-context:
+	node --import tsx db/load-context.ts
 
 mcp-install:
 	cd mcp && npm install
