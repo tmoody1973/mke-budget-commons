@@ -60,7 +60,7 @@ export function DepartmentBudgetCard({ data }: { data: any }) {
 
       {isCity && (
         <>
-          <div className="grid grid-cols-2 gap-1.5">
+          <div className="grid grid-cols-2 gap-1.5" data-figure="dept-stats">
             <Stat label="Grand total" value={usd(t.grand_total)} />
             <Stat label="Salaries (006000)" value={usd(t.net_salaries_006000)} />
             <Stat label="Fringe (006100)" value={usd(t.fringe_006100)} />
@@ -92,7 +92,7 @@ export function DepartmentBudgetCard({ data }: { data: any }) {
       )}
 
       {isCounty && (
-        <div className="grid grid-cols-2 gap-1.5">
+        <div className="grid grid-cols-2 gap-1.5" data-figure="dept-stats">
           <Stat label="Total expenditures" value={usd(t.total_expenditures)} />
           <Stat label="Tax levy" value={usd(t.tax_levy)} />
           <Stat label="Personnel" value={usd(t.personnel_costs)} />
@@ -106,7 +106,7 @@ export function DepartmentBudgetCard({ data }: { data: any }) {
 
       {!isCity && !isCounty && isMps && (
         <>
-          <div className="grid grid-cols-2 gap-1.5">
+          <div className="grid grid-cols-2 gap-1.5" data-figure="dept-stats">
             <Stat label="Total" value={usd(data.total)} />
             <Stat label="FTE" value={num(data.total_fte)} />
           </div>

@@ -1,4 +1,5 @@
 import { biggestChanges, budgetBreakdown, reconciliationStatus } from "@mke/budget-tools";
+import type { CitationRef } from "@mke/budget-tools";
 import { BiggestChangesCard } from "@/components/generative/BiggestChangesCard";
 import { BudgetBreakdownCard } from "@/components/generative/BudgetBreakdownCard";
 import { TrustBar } from "@/components/dashboard/TrustBar";
@@ -48,6 +49,8 @@ export default async function Home({
       : breakdown && "total_expenditures" in breakdown
         ? (breakdown as { total_expenditures: number }).total_expenditures
         : null;
+  // The budget total is a real figure — it must carry its own citation.
+  const breakdownCitations = (breakdown as { citations?: CitationRef[] } | null)?.citations ?? [];
 
   return (
     <main className="w-full px-4 py-5 sm:px-6 lg:px-8">
@@ -63,14 +66,20 @@ export default async function Home({
         </div>
       )}
 
-      <TrustBar recon={recon} breakdownTotal={breakdownTotal} govLabel={gov} yearB={yearB} />
+      <TrustBar
+        recon={recon}
+        breakdownTotal={breakdownTotal}
+        totalCitations={breakdownCitations}
+        govLabel={gov}
+        yearB={yearB}
+      />
 
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
         <section className="rounded-2xl border border-default-200 bg-content1 p-4">
           <h2 className="mb-2 text-base font-semibold text-foreground">
             Biggest changes · FY{yearA} → FY{yearB}
           </h2>
-          {changes && "results" in changes ? (
+          {changes && "results" in changes && changes.results.length > 0 ? (
             <BiggestChangesCard data={changes} />
           ) : (
             <p className="p-3 text-sm text-default-500">No comparison data for {gov}.</p>

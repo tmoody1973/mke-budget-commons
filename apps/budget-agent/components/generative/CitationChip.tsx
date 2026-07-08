@@ -16,7 +16,7 @@ export function CitationChip({ doc_id, source_page }: CitationRef) {
   );
 }
 
-export function CitationRow({ citations }: { citations: CitationRef[] }) {
+export function CitationRow({ citations, max = 8 }: { citations: CitationRef[]; max?: number }) {
   if (!citations?.length) return null;
   // De-dupe by doc+page, cap the visible set.
   const seen = new Set<string>();
@@ -26,7 +26,7 @@ export function CitationRow({ citations }: { citations: CitationRef[] }) {
     seen.add(k);
     return true;
   });
-  const shown = unique.slice(0, 8);
+  const shown = unique.slice(0, max);
   return (
     <div className="mt-2 flex flex-wrap items-center gap-1">
       <span className="text-[11px] text-default-400">Source:</span>

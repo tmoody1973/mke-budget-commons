@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Milwaukee Budget — Journalist",
-  description: "Reconciled Milwaukee City & County budget data, agentic access layer.",
+  description: "Reconciled Milwaukee City, County & Public Schools budget data, agentic access layer.",
 };
 
 export default function RootLayout({

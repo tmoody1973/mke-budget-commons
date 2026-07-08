@@ -77,6 +77,20 @@ export const serverTools = [
     execute: async (args) => safe("glossary", () => tools.glossaryLookup(args)),
   }),
   defineTool({
+    name: "compare_years",
+    description:
+      "Department reserved-code totals for two fiscal years, with $ and % deltas. Cited.",
+    parameters: z.object(tools.compareYearsShape),
+    execute: async (args) => safe("compare_years", () => tools.compareYears(args)),
+  }),
+  defineTool({
+    name: "per_pupil_ranking",
+    description:
+      "MPS schools ranked by per-pupil spending (budget ÷ enrollment) — the equity lens. FY2027 proposed. Cited. Optionally filter by min/max enrollment to exclude tiny specialty schools.",
+    parameters: z.object(tools.perPupilRankingShape),
+    execute: async (args) => safe("per_pupil_ranking", () => tools.perPupilRanking(args)),
+  }),
+  defineTool({
     name: "run_sql",
     description:
       "Escape hatch: a single read-only SELECT/WITH over the budget tables (auto-LIMITed, 5s timeout). Call describe_schema first to see tables and columns.",

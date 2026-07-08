@@ -79,8 +79,7 @@ export function BiggestChangesCard({ data }: { data: BiggestChanges }) {
                 <td className="py-1 text-right tabular-nums text-default-600">{usd(r.b)}</td>
                 <td className={`py-1 text-right tabular-nums font-medium ${r.delta >= 0 ? "text-success" : "text-danger"}`}>{usdSigned(r.delta)}</td>
                 <td className={`py-1 text-right tabular-nums ${r.delta >= 0 ? "text-success" : "text-danger"}`}>
-                  {r.delta_pct >= 0 ? "+" : ""}
-                  {r.delta_pct.toFixed(1)}%
+                  {Number.isFinite(r.delta_pct) ? `${r.delta_pct >= 0 ? "+" : ""}${r.delta_pct.toFixed(1)}%` : "—"}
                 </td>
               </tr>
             ))}

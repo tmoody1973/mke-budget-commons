@@ -14,6 +14,8 @@ const TOOL_LABELS: Record<string, string> = {
   search_line_items: "Searching budget line items",
   cite: "Fetching the source citation",
   reconciliation_status: "Checking reconciliation / findings",
+  compare_years: "Comparing two fiscal years",
+  per_pupil_ranking: "Ranking schools by per-pupil spending",
   glossary: "Looking up the glossary",
   run_sql: "Running a read-only SQL query",
   describe_schema: "Reading the database schema",
@@ -98,7 +100,9 @@ export function ToolRenderers() {
         const r = parseResult(props);
         if (props.status !== "complete") return <ToolChip name="biggest_changes" status={props.status} />;
         if (isToolError(r)) return <ToolError name="biggest_changes" />;
-        if (!r || !Array.isArray(r.results)) return <ToolChip name="biggest_changes" status="complete" />;
+        // Empty results → a chip, never an empty (uncited) chart.
+        if (!r || !Array.isArray(r.results) || r.results.length === 0)
+          return <ToolChip name="biggest_changes" status="complete" />;
         return <BiggestChangesCard data={r as never} />;
       },
     },
