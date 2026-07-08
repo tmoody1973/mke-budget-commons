@@ -8,3 +8,4 @@ node_modules/
 # raw PDFs are large; commit deliberately, not by accident during dev
 # (comment the next line out once you've decided to version the source docs)
 # data/raw/**/*.pdf
+.playwright-mcp/

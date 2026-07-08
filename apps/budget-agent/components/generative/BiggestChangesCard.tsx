@@ -49,7 +49,7 @@ export function BiggestChangesCard({ data }: { data: BiggestChanges }) {
             <XAxis type="number" tickFormatter={(v) => usdCompact(Number(v))} tick={{ fontSize: 10 }} stroke="#94a3b8" />
             <YAxis type="category" dataKey="department" width={116} tick={{ fontSize: 10 }} stroke="#94a3b8" />
             <ReferenceLine x={0} stroke="#cbd5e1" />
-            <Tooltip formatter={(v: number) => usdSigned(Number(v))} contentStyle={{ fontSize: 12, borderRadius: 8 }} cursor={{ fill: "rgba(148,163,184,0.12)" }} />
+            <Tooltip formatter={(v) => usdSigned(Number(v))} contentStyle={{ fontSize: 12, borderRadius: 8 }} cursor={{ fill: "rgba(148,163,184,0.12)" }} />
             <Bar dataKey="delta" radius={2}>
               {chartRows.map((r, i) => (
                 <Cell key={i} fill={r.delta >= 0 ? UP : DOWN} />

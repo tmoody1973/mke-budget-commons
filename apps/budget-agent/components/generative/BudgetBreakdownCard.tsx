@@ -72,7 +72,7 @@ export function BudgetBreakdownCard({ data }: { data: BudgetBreakdown }) {
             <XAxis type="number" tickFormatter={(v) => usdCompact(Number(v))} tick={{ fontSize: 10 }} stroke="#94a3b8" />
             <YAxis type="category" dataKey="label" width={110} tick={{ fontSize: 10 }} stroke="#94a3b8" />
             <Tooltip
-              formatter={(v: number) => usd(Number(v))}
+              formatter={(v) => usd(Number(v))}
               contentStyle={{ fontSize: 12, borderRadius: 8 }}
               cursor={{ fill: "rgba(148,163,184,0.12)" }}
             />
