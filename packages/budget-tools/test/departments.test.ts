@@ -32,6 +32,12 @@ test("budgetBreakdown(city) sums to ~100% and carries a total", async () => {
   assert.ok(Math.abs(sum - 100) < 1.0, `breakdown pct sum ${sum} should be ~100`);
 });
 
+test("budgetBreakdown(city) carries citations", async () => {
+  const r = await budgetBreakdown({ gov: "city" });
+  assert.ok("citations" in r && Array.isArray((r as any).citations) && (r as any).citations.length > 0,
+    "citywide breakdown must cite its source pages");
+});
+
 test("getDepartmentBudget returns {ambiguous, candidates} for a multi-match name (does not throw)", async () => {
   const r = await getDepartmentBudget({ dept: "commission", gov: "city" });
   assert.ok(isAmbiguous(r), "expected the ambiguous-candidates branch");

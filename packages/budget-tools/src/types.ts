@@ -105,6 +105,7 @@ export type CityBreakdown = {
     equipment: BreakdownPart;
     special_funds: BreakdownPart;
   };
+  citations: CitationRef[];
   note: string;
 };
 
@@ -118,6 +119,7 @@ export type CountyBreakdown = {
     debt_and_depreciation: BreakdownPart;
     interdepartmental_charges: BreakdownPart;
   };
+  citations: CitationRef[];
   note: string;
 };
 
@@ -127,6 +129,7 @@ export type MpsBreakdown = {
   total: number;
   people_costs: { salaries: BreakdownPart; benefits: BreakdownPart; other: BreakdownPart };
   top_objects: (BreakdownPart & { object: string })[];
+  citations: CitationRef[];
   note: string;
 };
 
