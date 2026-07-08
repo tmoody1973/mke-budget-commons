@@ -26,3 +26,10 @@ test("budgetBreakdown(city) sums to ~100% and carries a total", async () => {
   const sum = pcts.reduce((s, p) => s + p, 0);
   assert.ok(Math.abs(sum - 100) < 1.0, `breakdown pct sum ${sum} should be ~100`);
 });
+
+test("getDepartmentBudget returns {ambiguous, candidates} for a multi-match name (does not throw)", async () => {
+  const r = await getDepartmentBudget({ dept: "commission", gov: "city" });
+  assert.equal(r.ambiguous, true);
+  assert.ok(Array.isArray(r.candidates) && r.candidates.length >= 2, "should return >=2 candidates");
+  assert.ok(r.candidates.every((c: any) => c.dept_id && c.canonical_name), "candidates carry dept_id + canonical_name");
+});
