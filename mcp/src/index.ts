@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { query, guardSelect, lookupGlossary, citations, num, resolveDept, VINTAGE, grandTotalPred, deptYear, pct, YEAR_KIND, ROLLUP_EXCLUDE, STAGE_ORDER, type Gov } from "@mke/budget-tools";
+import { query, guardSelect, runSql, describeSchema, lookupGlossary, citations, num, resolveDept, VINTAGE, grandTotalPred, deptYear, pct, YEAR_KIND, ROLLUP_EXCLUDE, STAGE_ORDER, type Gov } from "@mke/budget-tools";
 
 const server = new McpServer({ name: "mke-budget", version: "0.1.0" });
 
@@ -259,13 +259,10 @@ server.registerTool(
     inputSchema: { query: z.string(), limit: z.number().int().max(1000).default(200) },
   },
   async ({ query: raw, limit }) => {
-    let sql: string;
-    try { sql = guardSelect(raw, limit); } catch (e: any) { return fail(e.message); }
     try {
-      const rows = await query(sql);
-      return ok({ sql, row_count: rows.length, rows });
+      return ok(await runSql({ query: raw, limit }));
     } catch (e: any) {
-      return fail(`Query failed: ${e.message}`);
+      return fail(e.message);
     }
   },
 );
