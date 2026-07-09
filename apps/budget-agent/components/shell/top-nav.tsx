@@ -5,6 +5,7 @@ import type { Gov } from "./nav-items";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { FOOTER_ITEMS, NAV_ITEMS } from "./nav-items";
+import { HowToUse } from "@/components/onboarding/HowToUse";
 
 /** Horizontal top navigation — leaves the full width for the dashboard content. */
 export function TopNav() {
@@ -63,6 +64,7 @@ export function TopNav() {
             </button>
           );
         })}
+        <HowToUse />
         <span className="text-default-400 hidden whitespace-nowrap text-sm xl:inline">Ask the copilot →</span>
       </div>
     </header>
