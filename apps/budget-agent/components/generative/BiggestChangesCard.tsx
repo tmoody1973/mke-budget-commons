@@ -59,26 +59,27 @@ export function BiggestChangesCard({ data }: { data: BiggestChanges }) {
         </ResponsiveContainer>
       </div>
 
-      {/* Right-aligned table */}
-      <div className="mt-2">
+      {/* Right-aligned table. Scrolls within the card if it can't fit; the raw
+          prior/current-year columns hide on phones so the deltas (the story) fit. */}
+      <div className="mt-2 overflow-x-auto">
         <table className="w-full text-sm" data-figure="changes-table">
           <thead>
             <tr className="border-b border-default-200 text-default-500">
               <th className="py-1 text-left font-medium">Department</th>
-              <th className="py-1 text-right font-medium tabular-nums">{fyA?.replace("fy", "FY")}</th>
-              <th className="py-1 text-right font-medium tabular-nums">{fyB?.replace("fy", "FY")}</th>
-              <th className="py-1 text-right font-medium tabular-nums">Δ $</th>
-              <th className="py-1 text-right font-medium tabular-nums">Δ %</th>
+              <th className="hidden py-1 text-right font-medium tabular-nums sm:table-cell">{fyA?.replace("fy", "FY")}</th>
+              <th className="hidden py-1 text-right font-medium tabular-nums sm:table-cell">{fyB?.replace("fy", "FY")}</th>
+              <th className="py-1 pl-3 text-right font-medium tabular-nums">Δ $</th>
+              <th className="py-1 pl-2 text-right font-medium tabular-nums">Δ %</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
               <tr key={r.department} className="border-b border-default-100 last:border-0">
                 <td className="py-1 pr-2 text-left">{r.department}</td>
-                <td className="py-1 text-right tabular-nums text-default-600">{usd(r.a)}</td>
-                <td className="py-1 text-right tabular-nums text-default-600">{usd(r.b)}</td>
-                <td className={`py-1 text-right tabular-nums font-medium ${r.delta >= 0 ? "text-success" : "text-danger"}`}>{usdSigned(r.delta)}</td>
-                <td className={`py-1 text-right tabular-nums ${r.delta >= 0 ? "text-success" : "text-danger"}`}>
+                <td className="hidden py-1 text-right tabular-nums whitespace-nowrap text-default-600 sm:table-cell">{usd(r.a)}</td>
+                <td className="hidden py-1 text-right tabular-nums whitespace-nowrap text-default-600 sm:table-cell">{usd(r.b)}</td>
+                <td className={`py-1 pl-3 text-right tabular-nums whitespace-nowrap font-medium ${r.delta >= 0 ? "text-success" : "text-danger"}`}>{usdSigned(r.delta)}</td>
+                <td className={`py-1 pl-2 text-right tabular-nums whitespace-nowrap ${r.delta >= 0 ? "text-success" : "text-danger"}`}>
                   {Number.isFinite(r.delta_pct) ? `${r.delta_pct >= 0 ? "+" : ""}${r.delta_pct.toFixed(1)}%` : "—"}
                 </td>
               </tr>

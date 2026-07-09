@@ -85,33 +85,35 @@ export function BudgetBreakdownCard({ data }: { data: BudgetBreakdown }) {
         </ResponsiveContainer>
       </div>
 
-      {/* Right-aligned table */}
-      <table className="mt-2 w-full text-sm" data-figure="breakdown-table">
-        <thead>
-          <tr className="border-b border-default-200 text-default-500">
-            <th className="py-1 text-left font-medium">Category</th>
-            <th className="py-1 text-right font-medium tabular-nums">Amount</th>
-            <th className="py-1 text-right font-medium tabular-nums">Share</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r, i) => (
-            <tr key={r.label} className="border-b border-default-100 last:border-0">
-              <td className="py-1 text-left">
-                <span className="mr-1.5 inline-block h-2 w-2 rounded-sm align-middle" style={{ background: COLORS[i % COLORS.length] }} />
-                {r.label}
-              </td>
-              <td className="py-1 text-right tabular-nums text-foreground">{usd(r.amount)}</td>
-              <td className="py-1 text-right tabular-nums text-default-600">{r.pct.toFixed(1)}%</td>
+      {/* Right-aligned table (scrolls within the card if the amounts can't fit) */}
+      <div className="mt-2 overflow-x-auto">
+        <table className="w-full text-sm" data-figure="breakdown-table">
+          <thead>
+            <tr className="border-b border-default-200 text-default-500">
+              <th className="py-1 text-left font-medium">Category</th>
+              <th className="py-1 pl-3 text-right font-medium tabular-nums">Amount</th>
+              <th className="py-1 pl-2 text-right font-medium tabular-nums">Share</th>
             </tr>
-          ))}
-          <tr className="font-semibold">
-            <td className="py-1 text-left">Total</td>
-            <td className="py-1 text-right tabular-nums">{usd(total)}</td>
-            <td className="py-1 text-right tabular-nums">100%</td>
-          </tr>
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={r.label} className="border-b border-default-100 last:border-0">
+                <td className="py-1 pr-2 text-left">
+                  <span className="mr-1.5 inline-block h-2 w-2 rounded-sm align-middle" style={{ background: COLORS[i % COLORS.length] }} />
+                  {r.label}
+                </td>
+                <td className="py-1 pl-3 text-right tabular-nums whitespace-nowrap text-foreground">{usd(r.amount)}</td>
+                <td className="py-1 pl-2 text-right tabular-nums whitespace-nowrap text-default-600">{r.pct.toFixed(1)}%</td>
+              </tr>
+            ))}
+            <tr className="font-semibold">
+              <td className="py-1 text-left">Total</td>
+              <td className="py-1 pl-3 text-right tabular-nums whitespace-nowrap">{usd(total)}</td>
+              <td className="py-1 pl-2 text-right tabular-nums whitespace-nowrap">100%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <CitationRow citations={citations} />
     </div>
