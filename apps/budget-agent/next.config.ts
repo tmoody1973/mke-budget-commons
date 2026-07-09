@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
   // Node/native packages with dynamic bits — keep them external to the bundler.
   // transformers.js (WPF embeddings) pulls onnxruntime-node + sharp; server-only
   // (the `explain` tool runs server-side), never in the client bundle.
-  serverExternalPackages: ["pg", "@huggingface/transformers", "onnxruntime-node", "sharp"],
+  serverExternalPackages: ["pg", "@huggingface/transformers", "onnxruntime-node"],
 };
 
 export default nextConfig;
