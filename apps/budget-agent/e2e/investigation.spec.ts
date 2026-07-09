@@ -1,5 +1,12 @@
 import { test, expect, type Page } from "@playwright/test";
 
+// The "How to use" modal auto-opens once for first-time visitors and would cover
+// the copilot input. Mark it seen before every navigation so the tests drive a
+// clean page (this is not the modal's own test).
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("mke-howto-seen", "1"));
+});
+
 /**
  * Trust E2E for the budget agent. The one promise this app makes: every dollar
  * figure on screen is sourced to a document page, and the model never invents a
