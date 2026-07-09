@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Modal } from "./Modal";
 import { PERSONAS } from "./example-questions";
+
+// Shown once per browser: first-time visitors get the modal auto-opened as
+// onboarding; the flag suppresses it on every visit after.
+const SEEN_KEY = "mke-howto-seen";
 
 /**
  * Fill the copilot input with a question and (best-effort) submit it. Uses the
@@ -37,6 +41,18 @@ export function HowToUse() {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState(PERSONAS[0].id);
   const persona = PERSONAS.find((p) => p.id === tab) ?? PERSONAS[0];
+
+  // Auto-open once for first-time visitors (client-only; after hydration).
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(SEEN_KEY) !== "1") {
+        localStorage.setItem(SEEN_KEY, "1");
+        setOpen(true);
+      }
+    } catch {
+      // localStorage blocked (private mode) — just skip the auto-open.
+    }
+  }, []);
 
   const ask = (q: string) => {
     setOpen(false);
