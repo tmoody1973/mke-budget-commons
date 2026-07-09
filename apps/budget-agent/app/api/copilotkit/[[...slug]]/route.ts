@@ -8,6 +8,13 @@ import { serverTools } from "@/lib/tools/server-tools";
 // this endpoint streams, so it must never be statically optimized.
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+// A "find the story" investigation makes several sequential model calls plus tool
+// DB round-trips — measured up to ~40s for deep questions (e.g. "explain a
+// department's whole budget step by step"). Without this, the function used the
+// low platform default (~10s) and timed out mid-stream: the tool cards had already
+// streamed, but the closing narrative was cut off — so the answer looked like it
+// "stopped after the chart." 90s gives deep investigations room to finish.
+export const maxDuration = 90;
 
 // Versioned system prompt: base Milwaukee Budget Expert + Journalist overlay.
 // Read from cwd (the app dir under `next dev`/`next build`).
@@ -26,7 +33,8 @@ const agent = new BuiltInAgent({
   model: "anthropic/claude-sonnet-5",
   prompt: systemPrompt,
   tools: serverTools,
-  maxSteps: 6, // 4–6 step "find the story" investigations
+  maxSteps: 8, // headroom for a "find the story" investigation + the closing narrative
+               // (the loop stops on stepCountIs(maxSteps); ending on a tool call = no synthesis)
   // Prompt-injection posture (explicit, not relying on defaults): our system
   // prompt is static and never concatenated with user input, and we do NOT
   // forward user-supplied system/developer-role messages to the model — so a
