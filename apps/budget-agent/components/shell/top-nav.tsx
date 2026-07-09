@@ -4,8 +4,9 @@ import type { Gov } from "./nav-items";
 
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { FOOTER_ITEMS, NAV_ITEMS } from "./nav-items";
+import { NAV_ITEMS } from "./nav-items";
 import { HowToUse } from "@/components/onboarding/HowToUse";
+import { Methodology } from "@/components/onboarding/Methodology";
 
 /** Horizontal top navigation — leaves the full width for the dashboard content. */
 export function TopNav() {
@@ -51,19 +52,7 @@ export function TopNav() {
       </nav>
 
       <div className="ml-auto flex items-center gap-3">
-        {FOOTER_ITEMS.map((item) => {
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.href}
-              onClick={() => go(item.href, item.external)}
-              className="text-default-500 hover:text-foreground inline-flex items-center gap-1.5 text-sm"
-            >
-              <Icon className="size-4" />
-              <span className="hidden md:inline">{item.label}</span>
-            </button>
-          );
-        })}
+        <Methodology />
         <HowToUse />
         <span className="text-default-400 hidden whitespace-nowrap text-sm xl:inline">Ask the copilot →</span>
       </div>
