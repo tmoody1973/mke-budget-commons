@@ -69,24 +69,26 @@ export function DepartmentBudgetCard({ data }: { data: any }) {
             <Stat label="FTE (O&M / non-O&M)" value={`${num(data?.fte?.om)} / ${num(data?.fte?.non_om)}`} />
           </div>
           {Array.isArray(data?.top_expenditures) && data.top_expenditures.length > 0 && (
-            <table className="mt-2 w-full text-xs" data-figure="dept-top-expenditures">
-              <thead>
-                <tr className="border-b border-default-200 text-default-500">
-                  <th className="py-1 text-left font-medium">Top expenditure</th>
-                  <th className="py-1 text-right font-medium tabular-nums">Amount</th>
-                  <th className="py-1 text-right font-medium">Page</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.top_expenditures.slice(0, 8).map((e: any, i: number) => (
-                  <tr key={i} className="border-b border-default-100 last:border-0">
-                    <td className="py-1 pr-2 text-left">{e.description}</td>
-                    <td className="py-1 text-right tabular-nums text-foreground">{usd(e.amount)}</td>
-                    <td className="py-1 text-right text-default-500">p.{e.page}</td>
+            <div className="mt-2 overflow-x-auto">
+              <table className="w-full text-xs" data-figure="dept-top-expenditures">
+                <thead>
+                  <tr className="border-b border-default-200 text-default-500">
+                    <th className="py-1 text-left font-medium">Top expenditure</th>
+                    <th className="py-1 pl-3 text-right font-medium tabular-nums">Amount</th>
+                    <th className="py-1 pl-2 text-right font-medium">Page</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.top_expenditures.slice(0, 8).map((e: any, i: number) => (
+                    <tr key={i} className="border-b border-default-100 last:border-0">
+                      <td className="py-1 pr-2 text-left">{e.description}</td>
+                      <td className="py-1 pl-3 text-right tabular-nums whitespace-nowrap text-foreground">{usd(e.amount)}</td>
+                      <td className="py-1 pl-2 text-right whitespace-nowrap text-default-500">p.{e.page}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </>
       )}
@@ -111,22 +113,24 @@ export function DepartmentBudgetCard({ data }: { data: any }) {
             <Stat label="FTE" value={num(data.total_fte)} />
           </div>
           {data.top_spending_by_object?.length > 0 && (
-            <table className="mt-2 w-full text-xs" data-figure="dept-top-objects">
-              <thead>
-                <tr className="border-b border-default-200 text-default-500">
-                  <th className="py-1 text-left font-medium">Object</th>
-                  <th className="py-1 text-right font-medium tabular-nums">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.top_spending_by_object.slice(0, 8).map((o: any, i: number) => (
-                  <tr key={i} className="border-b border-default-100 last:border-0">
-                    <td className="py-1 pr-2 text-left">{o.object}</td>
-                    <td className="py-1 text-right tabular-nums text-foreground">{usd(o.amount)}</td>
+            <div className="mt-2 overflow-x-auto">
+              <table className="w-full text-xs" data-figure="dept-top-objects">
+                <thead>
+                  <tr className="border-b border-default-200 text-default-500">
+                    <th className="py-1 text-left font-medium">Object</th>
+                    <th className="py-1 pl-3 text-right font-medium tabular-nums">Amount</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.top_spending_by_object.slice(0, 8).map((o: any, i: number) => (
+                    <tr key={i} className="border-b border-default-100 last:border-0">
+                      <td className="py-1 pr-2 text-left">{o.object}</td>
+                      <td className="py-1 pl-3 text-right tabular-nums whitespace-nowrap text-foreground">{usd(o.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </>
       )}

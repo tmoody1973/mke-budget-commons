@@ -1,7 +1,7 @@
 "use client";
 
 import "@copilotkit/react-core/v2/styles.css";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { CopilotKit, CopilotSidebar } from "@copilotkit/react-core/v2";
 import { ToolRenderers } from "@/components/copilot/tool-renderers";
 import { TopNav } from "@/components/shell/top-nav";
@@ -11,6 +11,15 @@ import { TopNav } from "@/components/shell/top-nav";
  * with a horizontal top nav above the full-width dashboard content.
  */
 export function Providers({ children }: { children: React.ReactNode }) {
+  // The sidebar docks beside the dashboard on desktop, but is a full-screen modal
+  // on phones — so it must NOT auto-open there, or it buries the dashboard on load.
+  // Mount it after measuring the viewport (defaultOpen is read once): open on
+  // desktop, a tappable bubble on mobile.
+  const [sidebar, setSidebar] = useState<{ open: boolean } | null>(null);
+  useEffect(() => {
+    setSidebar({ open: window.matchMedia("(min-width: 768px)").matches });
+  }, []);
+
   return (
     <CopilotKit runtimeUrl="/api/copilotkit">
       <ToolRenderers />
@@ -20,7 +29,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         </Suspense>
         {children}
       </div>
-      <CopilotSidebar labels={{ modalHeaderTitle: "Budget Analyst" }} />
+      {sidebar && <CopilotSidebar defaultOpen={sidebar.open} labels={{ modalHeaderTitle: "Budget Analyst" }} />}
     </CopilotKit>
   );
 }
