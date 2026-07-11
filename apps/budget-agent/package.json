@@ -10,11 +10,18 @@
     "e2e": "playwright test"
   },
   "dependencies": {
+    "@arizeai/openinference-semantic-conventions": "^2.5.0",
     "@copilotkit/react-core": "^1.62.2",
     "@copilotkit/runtime": "^1.62.2",
     "@gravity-ui/icons": "^2.20.0",
     "@heroui/styles": "^3.2.2",
     "@mke/budget-tools": "*",
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/exporter-trace-otlp-proto": "^0.220.0",
+    "@opentelemetry/resources": "^2.9.0",
+    "@opentelemetry/sdk-trace-base": "^2.9.0",
+    "@opentelemetry/sdk-trace-node": "^2.9.0",
+    "@opentelemetry/semantic-conventions": "^1.43.0",
     "hono": "^4.12.28",
     "next": "16.2.10",
     "react": "19.2.4",
