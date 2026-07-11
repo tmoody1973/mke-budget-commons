@@ -9,6 +9,10 @@ import * as tools from "@mke/budget-tools";
 // the tool simply isn't offered to the model, so transformers.js never loads.
 const WPF_EXPLAIN_ENABLED = process.env.WPF_EXPLAIN_ENABLED === "true";
 
+/** Whether WPF retrieval actually works here. The system prompt reads this so it can
+ *  never advertise a capability the tool layer doesn't have (see route.ts). */
+export const wpfExplainAvailable = WPF_EXPLAIN_ENABLED;
+
 /**
  * Run a query function, converting any thrown error into a structured, friendly
  * result the model can relay — never a raw pg/stack trace, and never a number.
@@ -75,17 +79,28 @@ export const serverTools = [
     parameters: z.object(tools.reconciliationStatusShape),
     execute: async (args) => safe("reconciliation_status", () => tools.reconciliationStatus(args)),
   }),
-  ...(WPF_EXPLAIN_ENABLED
-    ? [
-        defineTool({
-          name: "explain",
-          description:
-            "Wisconsin Policy Forum context: semantic search over the WPF budget briefs for qualitative wisdom, history, and framing — to ATTRIBUTE (brief + page), never as a source of numbers. Call this for why / what-does-this-mean / give-me-context questions. Every $/FTE/% must still come from a reconciled budget tool.",
-          parameters: z.object(tools.explainShape),
-          execute: async (args) => safe("explain", () => tools.explain(args)),
-        }),
-      ]
-    : []),
+  // `explain` is ALWAYS registered, even where WPF retrieval is off. It used to be
+  // omitted entirely when disabled — but the system prompt still told the model to
+  // call it, so the model called a tool the runtime couldn't resolve. CopilotKit
+  // then forwarded that unresolvable call to the client as a client-side tool; the
+  // client only has a *renderer* for `explain` (no handler), so the call never
+  // returned and the whole turn hung with no answer. Registering a stub that fails
+  // fast makes that hang structurally impossible: the call always resolves.
+  defineTool({
+    name: "explain",
+    description: WPF_EXPLAIN_ENABLED
+      ? "Wisconsin Policy Forum context: semantic search over the WPF budget briefs for qualitative wisdom, history, and framing — to ATTRIBUTE (brief + page), never as a source of numbers. Call this for why / what-does-this-mean / give-me-context questions. Every $/FTE/% must still come from a reconciled budget tool."
+      : "UNAVAILABLE in this deployment — do not call. Wisconsin Policy Forum retrieval is disabled here; use your own absorbed WPF background knowledge in prose (attributed) instead.",
+    parameters: z.object(tools.explainShape),
+    execute: async (args) =>
+      WPF_EXPLAIN_ENABLED
+        ? // Only touches tools.explain() (and thus the local embedding model) when enabled.
+          safe("explain", () => tools.explain(args))
+        : {
+            error:
+              "Wisconsin Policy Forum retrieval is not available in this deployment. Do not call `explain` again. Keep going: use your own WPF background knowledge for framing (attributed in prose, no figures), and source every $/FTE/% from a reconciled budget tool as usual.",
+          },
+  }),
   defineTool({
     name: "glossary",
     description:

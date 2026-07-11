@@ -2,7 +2,7 @@ import { CopilotRuntime, BuiltInAgent, createCopilotHonoHandler } from "@copilot
 import { handle } from "hono/vercel";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { serverTools } from "@/lib/tools/server-tools";
+import { serverTools, wpfExplainAvailable } from "@/lib/tools/server-tools";
 
 // Node runtime — the CopilotKit runtime + Anthropic SDK + pg need Node APIs, and
 // this endpoint streams, so it must never be statically optimized.
@@ -18,10 +18,18 @@ export const maxDuration = 90;
 
 // Versioned system prompt: base Milwaukee Budget Expert + Journalist overlay.
 // Read from cwd (the app dir under `next dev`/`next build`).
+//
+// base.md instructs the model to call `explain` for why/context questions. Where WPF
+// retrieval is off (any deploy without WPF_EXPLAIN_ENABLED, which is prod today) that
+// instruction is a lie, and the model burns a step calling a tool that only errors.
+// Append an override so the prompt can never advertise a capability the tool layer
+// lacks. The tool layer independently fails fast (see server-tools.ts) — this just
+// stops the wasted call.
 const promptsDir = join(process.cwd(), "prompts");
 const systemPrompt = [
   readFileSync(join(promptsDir, "base.md"), "utf8"),
   readFileSync(join(promptsDir, "journalist.md"), "utf8"),
+  ...(wpfExplainAvailable ? [] : [readFileSync(join(promptsDir, "no-wpf-explain.md"), "utf8")]),
 ].join("\n\n");
 
 // BuiltInAgent reads ANTHROPIC_API_KEY from the environment automatically.
