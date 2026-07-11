@@ -20,6 +20,7 @@ import {
   SEMRESATTRS_PROJECT_NAME,
 } from "@arizeai/openinference-semantic-conventions";
 import { registerTelemetryIntegration } from "ai";
+import { waitUntil } from "@vercel/functions";
 
 /**
  * Arize AX tracing for the budget copilot.
@@ -268,7 +269,23 @@ export function startArizeTracing(): void {
     onFinish: async (e: any) => {
       try {
         emitTurnTrace(tracer, e);
-        await provider?.forceFlush();
+
+        const flush = provider?.forceFlush() ?? Promise.resolve();
+
+        // Vercel freezes the instance the moment the response is flushed, which can
+        // cut the in-flight OTLP request and silently drop the trace. waitUntil()
+        // tells the platform to keep the function alive until the export finishes.
+        // It throws outside a Vercel request context (local dev), where the plain
+        // await below is already sufficient — so swallow that.
+        try {
+          waitUntil(flush);
+        } catch {
+          /* not on Vercel — the await below covers us */
+        }
+
+        // The AI SDK awaits telemetry listeners, so awaiting here also holds the
+        // generation open until the spans are actually shipped.
+        await flush;
       } catch (err) {
         // A tracing bug must never surface as a broken chat.
         console.error("[arize] failed to emit trace:", err);
