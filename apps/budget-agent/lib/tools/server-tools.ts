@@ -3,10 +3,11 @@ import { defineTool } from "@copilotkit/runtime/v2";
 import { z } from "zod";
 import * as tools from "@mke/budget-tools";
 
-// WPF semantic retrieval (`explain`) needs the local embedding model. It's OFF by
-// default (fail-safe) and enabled only where the model can run — set
-// WPF_EXPLAIN_ENABLED=true (local dev has it). In a serverless deploy without it,
-// the tool simply isn't offered to the model, so transformers.js never loads.
+// WPF semantic retrieval (`explain`). Embedding is now an OpenAI API call, so this
+// runs anywhere — it is no longer gated by "can the native model load here". The
+// flag is just an explicit on/off; it needs OPENAI_API_KEY to be set alongside it.
+// When it's off, `explain` is still registered but fails fast (see below) — never
+// absent, because an absent tool the prompt still advertises is what hung the chat.
 const WPF_EXPLAIN_ENABLED = process.env.WPF_EXPLAIN_ENABLED === "true";
 
 /** Whether WPF retrieval actually works here. The system prompt reads this so it can
@@ -94,8 +95,7 @@ export const serverTools = [
     parameters: z.object(tools.explainShape),
     execute: async (args) =>
       WPF_EXPLAIN_ENABLED
-        ? // Only touches tools.explain() (and thus the local embedding model) when enabled.
-          safe("explain", () => tools.explain(args))
+        ? safe("explain", () => tools.explain(args))
         : {
             error:
               "Wisconsin Policy Forum retrieval is not available in this deployment. Do not call `explain` again. Keep going: use your own WPF background knowledge for framing (attributed in prose, no figures), and source every $/FTE/% from a reconciled budget tool as usual.",
