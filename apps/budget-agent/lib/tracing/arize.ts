@@ -1,5 +1,14 @@
 import "server-only";
-import { trace, context as otelContext, SpanStatusCode, type Span, type Tracer } from "@opentelemetry/api";
+import {
+  trace,
+  context as otelContext,
+  diag,
+  DiagConsoleLogger,
+  DiagLogLevel,
+  SpanStatusCode,
+  type Span,
+  type Tracer,
+} from "@opentelemetry/api";
 import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node";
 import { SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
@@ -223,6 +232,11 @@ export function startArizeTracing(): void {
   }
 
   started = true;
+
+  // Surface exporter failures (auth, network, rejected spans) instead of letting the
+  // OTLP exporter swallow them — a silent drop is exactly how prod traces go missing.
+  diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.ERROR);
+
   provider = buildProvider(spaceId, apiKey);
   provider.register();
   const tracer = trace.getTracer("mke-budget-agent", "1.0.0");

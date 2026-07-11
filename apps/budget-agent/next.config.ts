@@ -21,8 +21,17 @@ const nextConfig: NextConfig = {
   // Node/native packages with dynamic bits — keep them external to the bundler.
   // transformers.js / onnxruntime-node used to be here for WPF embeddings; they're
   // gone now that embedding is an HTTP call (the native addon was exactly what made
-  // `explain` unrunnable on serverless in the first place). Only pg remains.
-  serverExternalPackages: ["pg"],
+  // `explain` unrunnable on serverless in the first place).
+  //
+  // `ai` MUST be external. Arize tracing calls registerTelemetryIntegration() from
+  // `ai`, which stashes the integration on globalThis — but that only reaches
+  // CopilotKit's internal streamText if BOTH resolve to the SAME runtime module
+  // instance. Bundled, Next gave our route one copy of `ai` and @copilotkit/runtime
+  // another, so the registration was written into a registry nobody read: on Vercel
+  // the tracing initialized and the exporter worked, yet not one telemetry callback
+  // ever fired. Externalizing forces a single require()'d instance shared with
+  // CopilotKit. (It works locally either way, which is what made this so slippery.)
+  serverExternalPackages: ["pg", "ai"],
 };
 
 export default nextConfig;

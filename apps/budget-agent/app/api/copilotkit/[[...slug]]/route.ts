@@ -3,6 +3,18 @@ import { handle } from "hono/vercel";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { serverTools, wpfExplainAvailable } from "@/lib/tools/server-tools";
+import { startArizeTracing } from "@/lib/tracing/arize";
+
+// Arize tracing is started HERE, at module scope, and not from Next's
+// `instrumentation.ts` register() hook. That hook simply never executes in this
+// Vercel deployment — verified by putting a bare top-level console.log in
+// instrumentation.ts and never seeing it in the function logs, while logs from this
+// route module show up fine. So we initialize where we know the code actually loads.
+//
+// Module scope is early enough: this module is imported before any request is
+// handled, and registerTelemetryIntegration() is global — it just has to run before
+// the first generation. startArizeTracing() is idempotent.
+startArizeTracing();
 
 // Node runtime — the CopilotKit runtime + Anthropic SDK + pg need Node APIs, and
 // this endpoint streams, so it must never be statically optimized.
