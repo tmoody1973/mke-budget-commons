@@ -19,9 +19,10 @@ const nextConfig: NextConfig = {
   // @mke/budget-tools ships raw TypeScript (no build step) — transpile it here.
   transpilePackages: ["@mke/budget-tools"],
   // Node/native packages with dynamic bits — keep them external to the bundler.
-  // transformers.js (WPF embeddings) pulls onnxruntime-node + sharp; server-only
-  // (the `explain` tool runs server-side), never in the client bundle.
-  serverExternalPackages: ["pg", "@huggingface/transformers", "onnxruntime-node"],
+  // transformers.js / onnxruntime-node used to be here for WPF embeddings; they're
+  // gone now that embedding is an HTTP call (the native addon was exactly what made
+  // `explain` unrunnable on serverless in the first place). Only pg remains.
+  serverExternalPackages: ["pg"],
 };
 
 export default nextConfig;

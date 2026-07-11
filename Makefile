@@ -50,8 +50,9 @@ load-neon:
 parse-wpf:
 	python -m parsers.wpf_briefs
 
-# Layer-2 context corpus → Neon pgvector (embeds locally). Run AFTER parse-wpf;
-# independent of load-neon (which never touches context_chunk).
+# Layer-2 context corpus → Neon pgvector. Embeds via the OpenAI API, so it needs
+# OPENAI_API_KEY. Run AFTER parse-wpf; independent of load-neon (which never
+# touches context_chunk). Rebuilds the table from scratch if the vector width changed.
 load-context:
 	node --import tsx db/load-context.ts
 

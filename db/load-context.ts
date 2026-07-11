@@ -55,6 +55,41 @@ CREATE INDEX IF NOT EXISTS idx_ctx_embed  ON context_chunk USING hnsw (embedding
 CREATE INDEX IF NOT EXISTS idx_ctx_search ON context_chunk USING GIN (search);
 `;
 
+/**
+ * Drop context_chunk if its embedding column is a different width than the current
+ * model produces (i.e. we changed embedding model).
+ *
+ * This matters more than it looks. `CREATE TABLE IF NOT EXISTS` is a no-op against
+ * an existing table, so without this a width change would either blow up on INSERT
+ * or — far worse — leave vectors from two different models in one table, where
+ * cosine search silently returns nonsense instead of erroring. The table is
+ * disposable (rebuilt from the repo chunks on every run), so dropping is safe and
+ * is the only way to stay all-or-nothing.
+ */
+async function dropIfDimChanged(client: pg.PoolClient): Promise<void> {
+  const { rows } = await client.query<{ coltype: string }>(
+    `SELECT format_type(a.atttypid, a.atttypmod) AS coltype
+       FROM pg_attribute a
+       JOIN pg_class c ON c.oid = a.attrelid
+       JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE c.relname = 'context_chunk'
+        AND a.attname = 'embedding'
+        AND a.attnum > 0
+        AND NOT a.attisdropped
+        AND n.nspname = current_schema()`,
+  );
+  if (!rows.length) return; // table (or column) doesn't exist yet — nothing to drop
+
+  const existing = Number(rows[0].coltype.match(/vector\((\d+)\)/)?.[1]);
+  if (existing === EMBED_DIM) return;
+
+  console.log(
+    `context_chunk.embedding is ${rows[0].coltype}, but the current model emits ` +
+      `${EMBED_DIM} dims — dropping and rebuilding the corpus from scratch.`,
+  );
+  await client.query("DROP TABLE context_chunk");
+}
+
 function readChunks(): Chunk[] {
   const raw = readFileSync(CHUNKS, "utf8");
   return raw
@@ -73,6 +108,7 @@ async function main(): Promise<void> {
   const pool = new pg.Pool({ connectionString: url, max: 4 });
   const client = await pool.connect();
   try {
+    await dropIfDimChanged(client);
     await client.query(DDL);
 
     // One transaction: a failure mid-load rolls back to the prior good corpus
