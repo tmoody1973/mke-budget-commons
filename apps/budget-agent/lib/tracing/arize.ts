@@ -205,6 +205,7 @@ function emitTurnTrace(tracer: Tracer, event: any): void {
 }
 
 let started = false;
+let provider: NodeTracerProvider | undefined;
 
 /** Idempotent: Next may evaluate this module more than once in dev. */
 export function startArizeTracing(): void {
@@ -222,7 +223,8 @@ export function startArizeTracing(): void {
   }
 
   started = true;
-  buildProvider(spaceId, apiKey).register();
+  provider = buildProvider(spaceId, apiKey);
+  provider.register();
   const tracer = trace.getTracer("mke-budget-agent", "1.0.0");
 
   registerTelemetryIntegration({
@@ -240,9 +242,19 @@ export function startArizeTracing(): void {
         (typeof e?.durationMs === "number" ? endMs - e.durationMs : endMs);
       toolTimings.set(String(id), { startMs, endMs });
     },
-    onFinish: (e: any) => {
+    // Async on purpose. The AI SDK AWAITS each telemetry listener, so awaiting the
+    // flush here holds the generation open until the spans are actually shipped.
+    //
+    // That is load-bearing on serverless: a Vercel function is frozen the moment the
+    // response flushes, which killed the in-flight OTLP request and silently dropped
+    // every production trace (local and `next start` both worked — only Vercel lost
+    // them). Blocking on the flush costs a few hundred ms at the end of a turn that
+    // already takes tens of seconds, and it is the difference between having
+    // production traces and not having them.
+    onFinish: async (e: any) => {
       try {
         emitTurnTrace(tracer, e);
+        await provider?.forceFlush();
       } catch (err) {
         // A tracing bug must never surface as a broken chat.
         console.error("[arize] failed to emit trace:", err);
