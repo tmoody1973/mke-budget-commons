@@ -5,8 +5,20 @@ export type TableSchema = { table: string; purpose: string; columns: Record<stri
  * describe *semantics*, not just types. Never queries information_schema (which
  * guardSelect blocks). Column set verified against the live tool queries.
  */
-export function describeSchema(): { tables: TableSchema[]; enums: Record<string, string[]> } {
+export function describeSchema(): {
+  tables: TableSchema[];
+  enums: Record<string, string[]>;
+  gotchas: string[];
+} {
   return {
+    gotchas: [
+      // `gov_id` is on dim_department, dim_document AND dim_government, so any join of
+      // two of them makes a bare `gov_id` ambiguous — Postgres errors with
+      // 'column reference "gov_id" is ambiguous' and the whole query is lost.
+      "ALWAYS table-qualify `gov_id` (write `d.gov_id='city'`, never `gov_id='city'`). It exists on dim_department, dim_document and dim_government, so an unqualified reference in any joined query fails with 'column reference \"gov_id\" is ambiguous'.",
+      "Same rule for the other shared columns: `doc_id`, `dept_id`, `fiscal_year` and `source_page` appear on more than one table. Qualify every column in a joined query.",
+      "Prefer a typed tool over run_sql when one exists — they are already cited and reconciled.",
+    ],
     tables: [
       {
         table: "fact_budget_line",
@@ -68,6 +80,7 @@ export function describeSchema(): { tables: TableSchema[]; enums: Record<string,
           source_url: "document URL.",
           fiscal_year: "int.",
           doc_type: "e.g. adopted / requested / operating / proposed.",
+          gov_id: "government (see enums.gov_id).",
         },
       },
       {
