@@ -98,7 +98,13 @@ export async function getTopVendors(a: {
             SUM(CASE WHEN p.amount_paid > 0 THEN p.amount_paid END) AS gross_paid,
             SUM(CASE WHEN p.amount_paid < 0 THEN p.amount_paid END) AS refunds,
             COUNT(*)                                             AS payment_count,
-            MIN(p.doc_id) AS doc_id, MIN(p.source_row) AS source_row
+            -- Both provenance fields must come from the SAME payment row.
+            -- Independent MIN() aggregates them separately, which can pair a
+            -- 2022 doc_id with a 2025 source_row — a citation that resolves to
+            -- a real but unrelated payment. Ordering both by payment_id makes
+            -- the pairing deterministic.
+            (ARRAY_AGG(p.doc_id     ORDER BY p.payment_id))[1] AS doc_id,
+            (ARRAY_AGG(p.source_row ORDER BY p.payment_id))[1] AS source_row
        FROM fact_vendor_payment p JOIN dim_spending_unit u USING (unit_id)
       ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
       GROUP BY p.vendor_name
@@ -129,7 +135,13 @@ export async function vendorPaymentSummary(a: {
 
   const rows = await query(
     `SELECT ${col} AS bucket, SUM(p.amount_paid) AS net_paid, COUNT(*) AS payment_count,
-            MIN(p.doc_id) AS doc_id, MIN(p.source_row) AS source_row
+            -- Both provenance fields must come from the SAME payment row.
+            -- Independent MIN() aggregates them separately, which can pair a
+            -- 2022 doc_id with a 2025 source_row — a citation that resolves to
+            -- a real but unrelated payment. Ordering both by payment_id makes
+            -- the pairing deterministic.
+            (ARRAY_AGG(p.doc_id     ORDER BY p.payment_id))[1] AS doc_id,
+            (ARRAY_AGG(p.source_row ORDER BY p.payment_id))[1] AS source_row
        FROM fact_vendor_payment p JOIN dim_spending_unit u USING (unit_id)
       ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
       GROUP BY bucket ORDER BY net_paid DESC NULLS LAST LIMIT 60`,

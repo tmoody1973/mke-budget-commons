@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import os
 import secrets
+from decimal import Decimal
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse
 
@@ -93,9 +94,11 @@ CHECKBOOK_DOCS = [
      "parquet": ROOT / f"data/canonical/city/{fy}/actual/city-checkbook.parquet",
      "rows": rows, "total": total}
     for fy, rows, total in [
-        (2022, 94_203, 945_047_260.77), (2023, 92_043, 981_221_393.92),
-        (2024, 91_218, 1_137_479_102.02), (2025, 91_848, 1_186_269_947.32),
-        (2026, 34_808, 687_959_162.13),
+        # Decimal, and the gate below demands exact equality: with float a real
+        # one-cent miss can compute as 0.00999999… and slip past a < 0.01 check.
+        (2022, 94_203, Decimal("945047260.77")), (2023, 92_043, Decimal("981221393.92")),
+        (2024, 91_218, Decimal("1137479102.02")), (2025, 91_848, Decimal("1186269947.32")),
+        (2026, 34_808, Decimal("687959162.13")),
     ]
 ]
 
@@ -300,8 +303,8 @@ def load_vendor_payments(cur) -> tuple[int, int]:
             print(f"  ! {doc['doc_id']}: missing {doc['parquet']} — run `make fetch-checkbook`")
             continue
         df = pd.read_parquet(doc["parquet"])
-        got_sum = float(df["amount"].sum())
-        if len(df) != doc["rows"] or abs(got_sum - doc["total"]) >= 0.01:
+        got_sum = sum((Decimal(str(v)) for v in df["amount"]), Decimal(0))
+        if len(df) != doc["rows"] or got_sum != doc["total"]:
             print(f"  ! {doc['doc_id']}: RECONCILIATION FAILED "
                   f"({len(df):,} rows / ${got_sum:,.2f} vs published "
                   f"{doc['rows']:,} / ${doc['total']:,.2f}) — NOT LOADED")

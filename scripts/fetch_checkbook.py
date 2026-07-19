@@ -18,6 +18,7 @@ pages cannot shift or duplicate mid-pull the way a non-unique sort key allows.
 """
 
 import csv
+from decimal import Decimal
 import hashlib
 import json
 import sys
@@ -64,11 +65,11 @@ def post(path: str, payload: dict) -> dict:
 def fetch_year(year: int) -> dict:
     date_filter = {"ge": f"{year}-01-01", "le": f"{year}-12-31"}
     anchor = post("total", {"fields": ["amount"], "filter": {"date": date_filter}})
-    want_rows, want_sum = int(anchor["count"]), float(anchor["total"])
+    want_rows, want_sum = int(anchor["count"]), Decimal(str(anchor["total"]))
     out = OUTDIR / f"city-open-checkbook-{year}.csv"
 
     print(f"\n=== {year} === published: {want_rows:,} rows / ${want_sum:,.2f}")
-    rows, got_sum, offset = 0, 0.0, 0
+    rows, got_sum, offset = 0, Decimal(0), 0
 
     with out.open("w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=FIELDS)
@@ -90,7 +91,7 @@ def fetch_year(year: int) -> dict:
                 # De-duping on it silently drops real payment lines (verified:
                 # it lost 540 rows / $394,293.23 from 2026). Write every row;
                 # the count+total check below is what proves the pull correct.
-                got_sum += float(row["amount"])
+                got_sum += Decimal(row["amount"])
                 rows += 1
                 w.writerow({k: row.get(k, "") for k in FIELDS})
             offset += len(page)
@@ -98,7 +99,7 @@ def fetch_year(year: int) -> dict:
             time.sleep(0.15)   # be polite to a public gov endpoint
 
     delta = got_sum - want_sum
-    ok = rows == want_rows and abs(delta) < 0.01
+    ok = rows == want_rows and delta == 0
     print(f"\r  {rows:,} rows | sum ${got_sum:,.2f} | delta ${delta:,.2f} | "
           f"{'PASS' if ok else 'FAIL'}        ")
     return {
