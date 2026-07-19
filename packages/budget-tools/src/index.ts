@@ -11,6 +11,7 @@ export * from "./queries/positions";
 export * from "./queries/schools";
 export * from "./queries/context";
 export * from "./queries/payments";
+export * from "./queries/grants";
 export * from "./embed";
 export * from "./schemas";
 export * from "./types";

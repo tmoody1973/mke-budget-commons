@@ -402,3 +402,50 @@ export type BudgetVsPayments = {
   what_you_can_ask_instead: string[];
   basis: PaymentBasis;
 };
+
+// --------------------------------------------------------------------------- //
+// Federal grants (USAspending) — obligations, federal fiscal year, NOT budget.
+
+export type GrantBasis = {
+  amount_basis: "federal_obligation";
+  fiscal_year_basis: string;
+  covers: string[];
+  excludes: string[];
+  comparable_to_budget: false;
+  note: string;
+};
+
+export type GrantCite = { fiscal_year: number; source_row: number; award_key: string };
+
+export type GrantResults = {
+  hits: number;
+  results: {
+    grant_txn_id: number; fiscal_year: number; award_id: string | null;
+    action_date: string; obligated: number | null; recipient: string;
+    agency: string | null; sub_agency: string | null; program: string | null;
+    cfda_number: string | null; description: string | null;
+  }[];
+  basis: GrantBasis;
+  citations: GrantCite[];
+};
+
+export type TopRecipients = {
+  scope: { fiscal_year: number | string; agency: string };
+  recipients: {
+    recipient: string; net_obligated: number | null; gross_obligated: number | null;
+    deobligations: number; transaction_count: number; award_count: number;
+  }[];
+  basis: GrantBasis;
+  citations: GrantCite[];
+};
+
+export type GrantSummary = {
+  grouped_by: "year" | "agency" | "program" | "recipient";
+  scope: { fiscal_year: number | string; recipient: string };
+  buckets: {
+    bucket: string; net_obligated: number | null;
+    transaction_count: number; recipient_count: number;
+  }[];
+  basis: GrantBasis;
+  citations: GrantCite[];
+};

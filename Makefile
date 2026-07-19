@@ -1,4 +1,4 @@
-.PHONY: help parse-city-detailed parse-city-book parse-county-operating fetch-checkbook checkbook-parquet reconcile \
+.PHONY: help parse-city-detailed parse-city-book parse-county-operating fetch-checkbook checkbook-parquet fetch-grants grants-parquet reconcile \
         load-neon parse-wpf load-context mcp-install mcp-dev mcp-test tools-test clean
 
 help:
@@ -9,6 +9,7 @@ help:
 	@echo "  make parse-county-operating FY=2026             parse the county operating budget"
 	@echo "  make fetch-checkbook [YEARS='2024 2025']        pull City Open Checkbook via API (verified)"
 	@echo "  make checkbook-parquet                          re-derive checkbook Parquet from raw CSVs"
+	@echo "  make fetch-grants [YEARS='2024 2025']           pull federal grants via USAspending (verified)"
 	@echo "  make reconcile                                  run reconciliation pytest suite"
 	@echo "  make load-neon                                  rebuild Neon from repo Parquet (idempotent)"
 	@echo "  make mcp-install                                install the MCP server's node deps"
@@ -42,6 +43,15 @@ fetch-checkbook:
 # Re-derive canonical Parquet from raw CSVs already on disk (no network).
 checkbook-parquet:
 	python -m scripts.checkbook_to_parquet $(YEARS)
+
+# Federal grants via USAspending's bulk_download endpoint (NOT the search API —
+# see docs/FEDERAL-GRANTS-DESIGN.md). Each federal FY gated on two anchors.
+fetch-grants:
+	python -m scripts.fetch_grants $(YEARS)
+	python -m scripts.grants_to_parquet $(YEARS)
+
+grants-parquet:
+	python -m scripts.grants_to_parquet $(YEARS)
 
 parse-county-operating:
 	python -m parsers.county_operating
@@ -80,6 +90,7 @@ mcp-test:
 	cd mcp && node test/smoke_county.mjs
 	cd mcp && node test/smoke_mps.mjs
 	cd mcp && node test/smoke_payments.mjs
+	cd mcp && node test/smoke_grants.mjs
 
 tools-test:
 	npm run -w @mke/budget-tools test
