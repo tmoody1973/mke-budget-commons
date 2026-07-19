@@ -19,6 +19,7 @@ Government budgets are published as giant PDFs (and, for MPS, a spreadsheet) tha
 | **Milwaukee County** | 2026 Adopted Operating Budget | ✅ live | 37/37 chapters, 0 findings, 0 not-reconcilable |
 | **Milwaukee Public Schools** | FY2026-27 Revised Proposed Budget | ✅ live | 33,283 line items → $1,600,555,548 printed total, dollar-exact (2 vintages) |
 | **City of Milwaukee** | Open Checkbook 2022–2026 (vendor payments) | ✅ acquired | 404,120 payments → $4,937,976,866.16 published total, dollar-exact (5/5 years) |
+| **Federal (USAspending)** | Grants to Milwaukee County recipients, FY2018–2026 | ✅ acquired | 13,465 awards → $5,150,848,674.55 obligations, dollar-exact (9/9 federal FYs) |
 | Milwaukee County | 2026 Capital Budget | ⛔ parked | OCR-degraded — not reconciliation-grade |
 
 **Open Checkbook is actual vendor disbursements, not budget** — a separate series, not
@@ -26,6 +27,15 @@ Government budgets are published as giant PDFs (and, for MPS, a spreadsheet) tha
 is cash-basis rather than appropriation-basis, and omits interdepartmental charges.
 Comparing it line-for-line against adopted budget figures produces confident, wrong answers.
 See [`docs/OPEN-CHECKBOOK-API.md`](docs/OPEN-CHECKBOOK-API.md).
+
+**Federal grants are obligations on a federal fiscal year, not budget revenue** — and most
+recipients are nonprofits, hospitals and universities rather than government departments
+(the largest is the Medical College of Wisconsin, at roughly double what the City receives).
+Only the per-transaction `obligated` figure may be summed; award-lifetime values repeat on
+every row and inflate totals ~10x, so no tool exposes them. See
+[`docs/FEDERAL-GRANTS-DESIGN.md`](docs/FEDERAL-GRANTS-DESIGN.md).
+
+Each source keeps its own basis and its own guardrail; the pipeline never blends them.
 
 ## Architecture (4 layers)
 
@@ -54,6 +64,7 @@ pip install -r requirements.txt
 make parse-city-detailed FY=2026 TYPE=adopted   # parse a city doc + write its reconciliation report
 make parse-county-operating                     # parse the county operating book + report
 make fetch-checkbook                            # pull City Open Checkbook via API → verified Parquet
+make fetch-grants                               # pull federal grants via USAspending → verified Parquet
 make reconcile                                  # run the full pytest reconciliation suite (the trust layer)
 
 make load-neon                                  # rebuild Neon from repo Parquet (idempotent)
@@ -98,7 +109,7 @@ db/               Neon Postgres schema + idempotent loader
 mcp/              L3 TypeScript MCP server (tools + read-only SQL guard + smoke tests)
 scripts/          per-document reconciliation report generators + data acquisition (fetch_checkbook)
 apps/explainer/   L4 standalone public budget explainer (reads L3, fully cited)
-docs/             PRD, reconciliation reports, handoffs, OPEN-CHECKBOOK-API.md
+docs/             PRD, reconciliation reports, handoffs, data-source design docs
 ```
 
 ## The rules that make it trustworthy
