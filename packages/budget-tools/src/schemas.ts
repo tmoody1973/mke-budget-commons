@@ -28,3 +28,8 @@ export const searchVendorPaymentsShape = { vendor: z.string().optional(), unit: 
 export const getTopVendorsShape = { unit: z.string().optional(), year: z.number().int().optional(), limit: z.number().int().max(50).default(15) };
 export const vendorPaymentSummaryShape = { unit: z.string().optional(), year: z.number().int().optional(), group_by: z.enum(["account", "fund", "year", "unit"]).default("account") };
 export const compareBudgetToPaymentsShape = { department: z.string(), fiscal_year: z.number().int().optional() };
+
+// Federal grants (USAspending) — obligations, federal FY, never budget revenue.
+export const searchGrantsShape = { recipient: z.string().optional(), agency: z.string().optional(), program: z.string().optional(), fiscal_year: z.number().int().optional(), min_amount: z.number().optional(), limit: z.number().int().max(50).default(20) };
+export const getTopGrantRecipientsShape = { fiscal_year: z.number().int().optional(), agency: z.string().optional(), limit: z.number().int().max(50).default(15) };
+export const grantSummaryShape = { group_by: z.enum(["year", "agency", "program", "recipient"]).default("year"), fiscal_year: z.number().int().optional(), recipient: z.string().optional() };

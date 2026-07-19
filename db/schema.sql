@@ -145,6 +145,54 @@ COMMENT ON TABLE fact_vendor_payment IS
   'different granularity, scope (excludes salaries), content (includes debt/pension) and '
   'basis (cash vs appropriation). Do not join to fact_budget_line. See docs/CHECKBOOK-GUARDRAIL.md.';
 
+-- ===========================================================================
+-- FEDERAL GRANTS (USAspending) — awards to Milwaukee County recipients.
+--
+-- A third series, separate from both the budget ledger and vendor payments.
+-- No key to dim_department: most recipients are nonprofits and universities,
+-- not city departments, and the few that are governments are NOT comparable to
+-- their budget revenue lines (federal fiscal year vs city calendar year;
+-- obligations vs receipts; grants only vs all federal money).
+--
+-- `obligated` is the per-transaction number and the only one that may be summed.
+-- The award_lifetime_* columns repeat the whole award's value on EVERY
+-- transaction row — summing them across rows overstates FY2024 by 10.7x
+-- ($7.1B against a true $666M). The column names carry that warning into SQL.
+-- See docs/FEDERAL-GRANTS-DESIGN.md.
+-- ===========================================================================
+CREATE TABLE IF NOT EXISTS fact_federal_grant (
+  grant_txn_id  BIGSERIAL PRIMARY KEY,
+  fiscal_year   INT  NOT NULL,        -- FEDERAL fiscal year (Oct 1 – Sep 30)
+  award_key     TEXT NOT NULL,        -- assistance_award_unique_key (stable)
+  award_id      TEXT,
+  mod           TEXT,                 -- modification number
+  action_date   DATE NOT NULL,
+  obligated     NUMERIC(14,2) NOT NULL,   -- federal_action_obligation; SUM this one
+  award_lifetime_obligated NUMERIC(16,2), -- award total, repeated per row — NEVER SUM
+  award_lifetime_outlayed  NUMERIC(16,2), -- award total, repeated per row — NEVER SUM
+  recipient_name     TEXT NOT NULL,
+  recipient_uei      TEXT,
+  awarding_agency    TEXT,
+  awarding_sub_agency TEXT,
+  award_type    TEXT,
+  cfda_number   TEXT,
+  cfda_title    TEXT,                 -- the federal program name
+  description   TEXT,
+  source_row    INT  NOT NULL,        -- 1-based row in the verified extract
+  search        TSVECTOR GENERATED ALWAYS AS
+                (to_tsvector('english', recipient_name || ' ' || coalesce(cfda_title,''))) STORED
+);
+CREATE INDEX IF NOT EXISTS idx_ffg_year      ON fact_federal_grant (fiscal_year);
+CREATE INDEX IF NOT EXISTS idx_ffg_recipient ON fact_federal_grant (recipient_name);
+CREATE INDEX IF NOT EXISTS idx_ffg_search    ON fact_federal_grant USING GIN (search);
+
+COMMENT ON TABLE fact_federal_grant IS
+  'Federal grant obligations to Milwaukee County recipients (USAspending). SUM the '
+  '`obligated` column only. award_lifetime_obligated / award_lifetime_outlayed repeat '
+  'the whole award value on every transaction row — summing them across rows overstates '
+  'totals by ~10x. Federal fiscal year, not city fiscal year. Not comparable to budget '
+  'revenue lines. See docs/FEDERAL-GRANTS-DESIGN.md.';
+
 -- Per-school budget + enrollment (MPS), kept separate from the budget ledger so
 -- name-keyed school metrics don't collide with the code-keyed departments.
 CREATE TABLE IF NOT EXISTS fact_school (

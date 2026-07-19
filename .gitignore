@@ -25,4 +25,8 @@ data/canonical/context/
 # is consumed by every Vercel build fetch.
 data/raw/city/checkbook/*.csv
 
+# USAspending grant extracts — 13MB, regenerable via `make fetch-grants` and
+# gated on two anchors per year. Canonical Parquet is committed instead.
+data/raw/federal/grants/*.csv
+
 .vercel

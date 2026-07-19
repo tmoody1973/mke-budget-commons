@@ -81,7 +81,7 @@ SCHOOL_STATUS_MAP = {"PASS": "pass", "FAIL": "open", "UNMATCHED": "not_reconcila
 
 DATA_TABLES = [
     "reconciliation_result", "fact_school", "fact_amendment", "fact_budget_line",
-    "fact_vendor_payment", "dim_spending_unit",
+    "fact_vendor_payment", "dim_spending_unit", "fact_federal_grant",
     "dept_alias", "dim_department", "dim_document", "dim_government",
 ]
 
@@ -101,6 +101,10 @@ CHECKBOOK_DOCS = [
         (2026, 34_808, Decimal("687959162.13")),
     ]
 ]
+
+# Federal grant extracts (USAspending), one Parquet per FEDERAL fiscal year.
+# Own table, no key to the budget ledger — see docs/FEDERAL-GRANTS-DESIGN.md.
+GRANT_PARQUET = sorted((ROOT / "data/canonical/federal").glob("*/grants/mke-grants.parquet"))
 
 STATUS_MAP = {
     "PASS": "pass",
@@ -331,6 +335,37 @@ def load_vendor_payments(cur) -> tuple[int, int]:
     return len(units), len(rows)
 
 
+def load_federal_grants(cur) -> int:
+    """Federal grant obligations -> fact_federal_grant.
+
+    The Parquet was written only after reconciling to USAspending's own anchor
+    (scripts/grants_to_parquet.py refuses otherwise), so this is a straight load.
+    """
+    rows = []
+    for pq in GRANT_PARQUET:
+        df = pd.read_parquet(pq)
+        for r in df.itertuples(index=False):
+            rows.append((
+                int(r.fiscal_year), r.award_key, _clean(r.award_id), _clean(r.mod),
+                r.action_date, float(r.federal_action_obligation),
+                _clean(float(r.award_total_obligated)), _clean(float(r.award_total_outlayed)),
+                r.recipient_name, _clean(r.recipient_uei), _clean(r.awarding_agency),
+                _clean(r.awarding_sub_agency), _clean(r.award_type),
+                _clean(r.cfda_number), _clean(r.cfda_title), _clean(r.description),
+                int(r.source_row),
+            ))
+    cur.executemany(
+        """INSERT INTO fact_federal_grant
+           (fiscal_year, award_key, award_id, mod, action_date, obligated,
+            award_lifetime_obligated, award_lifetime_outlayed, recipient_name,
+            recipient_uei, awarding_agency, awarding_sub_agency, award_type,
+            cfda_number, cfda_title, description, source_row)
+           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+        rows,
+    )
+    return len(rows)
+
+
 def load_school_facts(cur) -> int:
     """Per-school budget + enrollment → fact_school (separate from the ledger)."""
     rows = []
@@ -429,6 +464,7 @@ def main() -> None:
             n_facts = load_facts(cur, df)
             load_school_facts(cur)      # into fact_school, kept off the budget ledger
             n_units, n_pay = load_vendor_payments(cur)   # own tables, not joinable to the ledger
+            n_grants = load_federal_grants(cur)          # own table, federal FY, not budget revenue
             n_recon = (load_reconciliation(cur) + load_reconciliation_county(cur)
                        + load_reconciliation_county_taxlevy(cur)
                        + load_reconciliation_mps(cur) + load_reconciliation_mps_schools(cur))
@@ -442,6 +478,7 @@ def main() -> None:
           f"{n_recon} reconciliation checks")
     print(f"  {n_pay} vendor payments across {n_units} spending units "
           f"(cash basis — not joinable to the budget ledger)")
+    print(f"  {n_grants} federal grant transactions (federal FY — not budget revenue)")
     print("  read-only role mcp_ro ready · MCP_DATABASE_URL written to .env")
 
 

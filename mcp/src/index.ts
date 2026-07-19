@@ -8,6 +8,8 @@ import {
   searchVendorPayments, getTopVendors, vendorPaymentSummary, compareBudgetToPayments,
   searchVendorPaymentsShape, getTopVendorsShape, vendorPaymentSummaryShape,
   compareBudgetToPaymentsShape,
+  searchGrants, getTopGrantRecipients, grantSummary,
+  searchGrantsShape, getTopGrantRecipientsShape, grantSummaryShape,
   listDepartmentsShape, getDepartmentBudgetShape, budgetBreakdownShape,
   compareYearsShape, traceAdoptionShape, biggestChangesShape, getPositionsShape, findPositionsShape,
   searchLineItemsShape, citeShape, reconciliationStatusShape, glossaryShape, runSqlShape,
@@ -260,6 +262,50 @@ server.registerTool(
     inputSchema: compareBudgetToPaymentsShape,
   },
   async (a) => wrap(() => compareBudgetToPayments(a)),
+);
+
+// --------------------------------------------------------------------------- //
+// Federal grants (USAspending) — obligations to Milwaukee County recipients.
+// Federal fiscal year, grants only; every response carries comparable_to_budget:false.
+// No tool sums award-lifetime values across rows (that inflates totals ~10x).
+
+const GRANTS_BASIS =
+  " Federal grant OBLIGATIONS by federal fiscal year (Oct–Sep) to recipients located in " +
+  "Milwaukee County — mostly nonprofits, hospitals and universities, plus the City and County. " +
+  "NOT city/county budget revenue: different fiscal calendar, obligations rather than receipts, " +
+  "grants only. Never compare these totals to budget figures.";
+
+server.registerTool(
+  "search_grants",
+  {
+    title: "Search federal grants",
+    description:
+      "Find federal grant awards by recipient, awarding agency, program (CFDA), fiscal year, or minimum amount — each cited to its source row." + GRANTS_BASIS,
+    inputSchema: searchGrantsShape,
+  },
+  async (a) => wrap(() => searchGrants(a)),
+);
+
+server.registerTool(
+  "get_top_grant_recipients",
+  {
+    title: "Top federal grant recipients",
+    description:
+      "Which organizations in Milwaukee County receive the most federal grant money, by net obligations. Deobligations are netted; gross and deobligations reported separately." + GRANTS_BASIS,
+    inputSchema: getTopGrantRecipientsShape,
+  },
+  async (a) => wrap(() => getTopGrantRecipients(a)),
+);
+
+server.registerTool(
+  "grant_summary",
+  {
+    title: "Federal grant summary",
+    description:
+      "Aggregate federal grant obligations by year, awarding agency, program, or recipient — trends over time and which federal programs fund Milwaukee." + GRANTS_BASIS,
+    inputSchema: grantSummaryShape,
+  },
+  async (a) => wrap(() => grantSummary(a)),
 );
 
 const transport = new StdioServerTransport();

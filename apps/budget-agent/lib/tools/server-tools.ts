@@ -163,6 +163,30 @@ export const serverTools = [
     parameters: z.object(tools.vendorPaymentSummaryShape),
     execute: async (args) => safe("vendor_payment_summary", () => tools.vendorPaymentSummary(args)),
   }),
+  // --- Federal grants (USAspending) --------------------------------------- //
+  // Federal FY obligations to Milwaukee County recipients. Every response carries
+  // comparable_to_budget: false. See docs/FEDERAL-GRANTS-DESIGN.md.
+  defineTool({
+    name: "get_top_grant_recipients",
+    description:
+      "Which organizations in Milwaukee County receive the most FEDERAL GRANT money, by net obligations. Answers 'who gets federal money here?' — mostly nonprofits, hospitals and universities, plus the City and County. Federal fiscal year, obligations, grants only. NOT city budget revenue.",
+    parameters: z.object(tools.getTopGrantRecipientsShape),
+    execute: async (args) => safe("get_top_grant_recipients", () => tools.getTopGrantRecipients(args)),
+  }),
+  defineTool({
+    name: "search_grants",
+    description:
+      "Find individual federal grant awards by recipient, awarding agency, program (CFDA), fiscal year, or minimum amount, each cited. Federal fiscal year, obligations, grants only. NOT city budget revenue.",
+    parameters: z.object(tools.searchGrantsShape),
+    execute: async (args) => safe("search_grants", () => tools.searchGrants(args)),
+  }),
+  defineTool({
+    name: "grant_summary",
+    description:
+      "Aggregate federal grant obligations by year, awarding agency, program, or recipient — trends over time and which federal programs fund Milwaukee. Federal fiscal year. NOT city budget revenue.",
+    parameters: z.object(tools.grantSummaryShape),
+    execute: async (args) => safe("grant_summary", () => tools.grantSummary(args)),
+  }),
   defineTool({
     name: "compare_budget_to_payments",
     description:
