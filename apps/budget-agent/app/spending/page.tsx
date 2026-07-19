@@ -134,7 +134,7 @@ function YearChip({ label, href, active }: { label: string; href: string; active
       aria-current={active ? "page" : undefined}
       className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
         active
-          ? "border-primary bg-primary text-white"
+          ? "border-primary/40 bg-primary/10 text-primary"
           : "border-default-200 bg-content1 text-default-600 hover:border-default-300 hover:text-foreground"
       }`}
     >

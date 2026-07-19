@@ -90,7 +90,8 @@ export default async function Grants({
           </h2>
           <p className="mb-3 text-xs text-default-500">
             Net federal obligations. Most recipients are nonprofits, hospitals and universities —
-            not government departments.
+            not government departments. Grouped by the recipient name exactly as filed, so one
+            organization filing under several names appears more than once — see the note below.
           </p>
           <RankedBars rows={recipientRows} valueLabel="Obligated" />
           <details className="mt-3">
@@ -131,6 +132,17 @@ export default async function Grants({
         federal contracts, loans, or direct payments — and counts awards by where the{" "}
         <em>recipient</em> is located, which is not the same as where the money is spent. Multi-year
         awards are counted by what was committed each year, never by their full lifetime value.
+        <br />
+        <br />
+        <span className="font-semibold text-foreground">One organization can appear under several names.</span>{" "}
+        Recipients are grouped by the name exactly as filed with the federal government, which is
+        the only grouping traceable back to the source. Milwaukee County, for instance, files as
+        both &quot;Milwaukee County&quot; and &quot;Milwaukee County, Wisconsin&quot; — so its true
+        total is larger than any single bar. We deliberately do <strong>not</strong> merge similar
+        names: entities like the Housing Authority of the City of Milwaukee and the Milwaukee County
+        Historical Society are legally separate from the governments whose names they contain, and
+        merging by name similarity would silently combine them. The federal UEI doesn&apos;t resolve
+        this either — these filings carry twelve different UEIs with no overlap.
       </BasisNote>
 
       <p className="mt-6 text-center text-xs text-default-400">
@@ -147,7 +159,7 @@ function YearChip({ label, href, active }: { label: string; href: string; active
       aria-current={active ? "page" : undefined}
       className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
         active
-          ? "border-primary bg-primary text-white"
+          ? "border-primary/40 bg-primary/10 text-primary"
           : "border-default-200 bg-content1 text-default-600 hover:border-default-300 hover:text-foreground"
       }`}
     >

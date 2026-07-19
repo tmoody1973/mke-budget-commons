@@ -24,23 +24,25 @@ export function TopNav() {
 
   return (
     <header className="border-default-200 bg-content1/85 sticky top-0 z-40 flex h-14 items-center gap-3 border-b px-4 backdrop-blur sm:px-6">
-      <div className="flex items-center gap-2.5">
+      <div className="flex shrink-0 items-center gap-2.5">
         <div className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-lg text-xs font-bold">
           MKE
         </div>
         <span className="text-foreground hidden text-sm font-semibold sm:inline">Milwaukee Budget</span>
       </div>
 
-      <nav className="ml-2 flex items-center gap-1">
+      <nav className="ml-2 flex min-w-0 items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {NAV_ITEMS.map((item) => {
           const active = item.gov ? hasGov && item.gov === gov : item.href === "/" ? !hasGov : false;
           const Icon = item.icon;
           return (
             <button
               key={item.href}
+              // shrink-0: nav scrolls as a whole rather than each label compressing
+              // to an unreadable width.
               onClick={() => go(item.href)}
               aria-current={active ? "page" : undefined}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
                 active ? "bg-primary/10 text-primary" : "text-default-600 hover:bg-default-100"
               }`}
             >
@@ -51,10 +53,10 @@ export function TopNav() {
         })}
       </nav>
 
-      <div className="ml-auto flex items-center gap-3">
+      <div className="ml-auto flex shrink-0 items-center gap-3">
         <Methodology />
         <HowToUse />
-        <span className="text-default-400 hidden whitespace-nowrap text-sm xl:inline">Ask the copilot →</span>
+        <span className="text-default-400 hidden whitespace-nowrap text-sm 2xl:inline">Ask the copilot →</span>
       </div>
     </header>
   );
