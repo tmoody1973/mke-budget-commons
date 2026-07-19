@@ -136,4 +136,38 @@ export const serverTools = [
     parameters: z.object({}),
     execute: async () => safe("describe_schema", () => tools.describeSchema()),
   }),
+
+  // --- Vendor payments (City Open Checkbook) ------------------------------ //
+  // Cash disbursements — a SEPARATE series from the budget. Every result carries
+  // comparable_to_budget: false, and compare_budget_to_payments exists to absorb
+  // "did they spend their budget?" rather than letting the model improvise a
+  // join. Descriptions mirror the MCP registrations. See docs/CHECKBOOK-GUARDRAIL.md.
+  defineTool({
+    name: "get_top_vendors",
+    description:
+      "Largest vendors by net dollars the City actually PAID, citywide or for one spending unit (2022–2026). Refunds are netted; gross and refunds reported separately. This is cash spending, NOT budget — never compare these figures to budget amounts.",
+    parameters: z.object(tools.getTopVendorsShape),
+    execute: async (args) => safe("get_top_vendors", () => tools.getTopVendors(args)),
+  }),
+  defineTool({
+    name: "search_vendor_payments",
+    description:
+      "Find individual City payments by vendor, spending unit, account, year, or minimum amount — each cited to its source row. Answers 'who does the city pay?' and 'how much did we pay X?'. Cash spending, NOT budget.",
+    parameters: z.object(tools.searchVendorPaymentsShape),
+    execute: async (args) => safe("search_vendor_payments", () => tools.searchVendorPayments(args)),
+  }),
+  defineTool({
+    name: "vendor_payment_summary",
+    description:
+      "Aggregate actual payments by account category, fund, year, or spending unit — what a unit pays for, and how that shifts year over year. Cash spending, NOT budget.",
+    parameters: z.object(tools.vendorPaymentSummaryShape),
+    execute: async (args) => safe("vendor_payment_summary", () => tools.vendorPaymentSummary(args)),
+  }),
+  defineTool({
+    name: "compare_budget_to_payments",
+    description:
+      "Call this whenever asked whether a department 'spent its budget', or to compare budgeted vs actual spending. It ALWAYS returns comparable: false and explains why no valid department-level budget-vs-actual exists between these sources, then lists what CAN be answered. Do NOT construct this comparison yourself from other tools — joining budget and payment figures produces plausible, quotable, false numbers.",
+    parameters: z.object(tools.compareBudgetToPaymentsShape),
+    execute: async (args) => safe("compare_budget_to_payments", () => tools.compareBudgetToPayments(args)),
+  }),
 ];

@@ -18,6 +18,7 @@ export function describeSchema(): {
       "ALWAYS table-qualify `gov_id` (write `d.gov_id='city'`, never `gov_id='city'`). It exists on dim_department, dim_document and dim_government, so an unqualified reference in any joined query fails with 'column reference \"gov_id\" is ambiguous'.",
       "Same rule for the other shared columns: `doc_id`, `dept_id`, `fiscal_year` and `source_page` appear on more than one table. Qualify every column in a joined query.",
       "Prefer a typed tool over run_sql when one exists — they are already cited and reconciled.",
+      "NEVER join or compare fact_vendor_payment to fact_budget_line. Cash disbursements and appropriations are not comparable: 70 spending units vs 25 budget departments (only 9 names match exactly, so a join silently drops 61), the checkbook excludes direct salaries/wages, it includes pension and debt service, and it is cash-basis not appropriation-basis. That join produces 'City Attorney spent 78.2% of its budget' — plausible and false. There is no valid department-level budget-vs-actual; call compare_budget_to_payments to explain why.",
     ],
     tables: [
       {
@@ -57,6 +58,39 @@ export function describeSchema(): {
           source_page: "1-based page (provenance).",
         },
         notes: "School budgets exclude central/districtwide costs. Tiny specialty schools have small denominators — filter by enrollment for comprehensive-school comparisons.",
+      },
+      {
+        table: "fact_vendor_payment",
+        purpose:
+          "City Open Checkbook: actual cash payments to vendors, 2022–2026. A SEPARATE series from the budget — NOT actuals-against-budget, and deliberately not joinable to fact_budget_line.",
+        columns: {
+          payment_id: "bigint PK.",
+          unit_id: "FK → dim_spending_unit.unit_id. NOT dept_id — there is no key to dim_department, by design.",
+          doc_id: "FK → dim_document ('city-checkbook-2025').",
+          voucher_id: "payment voucher; repeats across rows (one voucher, many lines).",
+          paid_on: "date the payment was made (CASH basis — not a fiscal-year appropriation).",
+          vendor_name: "payee.",
+          account_description: "what it was for ('Health Insurance', 'Road Construction Contracts').",
+          fund_code: "zero-padded text ('0001') — never cast to int.",
+          fund_name: "fund description ('General').",
+          amount_paid: "numeric dollars. NEGATIVE = refund/reversal (11,320 such rows).",
+          amount_basis: "always 'cash_disbursement'.",
+          source_row: "1-based row in the sha256-pinned source CSV (provenance; there is no page).",
+          search: "tsvector over vendor_name.",
+        },
+        notes:
+          "Excludes direct salaries and wages (city payroll is not a vendor payment) and interdepartmental charges; INCLUDES pension remittances, debt principal and interest, which are not departmental operating spend. Reconciles exactly to the portal's published totals ($4,937,976,866.16 across 404,120 rows). Do not compare to fact_budget_line — see gotchas.",
+      },
+      {
+        table: "dim_spending_unit",
+        purpose:
+          "Checkbook spending units (70 divisions). A SEPARATE dimension from dim_department (25 budget departments) — intentionally not joinable to it.",
+        columns: {
+          unit_id: "PK — the checkbook's own Spending Department ID ('1654').",
+          unit_name: "'DER-Employee Benefits Division'.",
+          gov_id: "always 'city'.",
+        },
+        notes: "Do not name-match these to dim_department.canonical_name: only 9 of 70 match exactly, so a name join looks successful while dropping 61 units.",
       },
       {
         table: "dim_department",
