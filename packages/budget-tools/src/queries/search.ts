@@ -1,4 +1,4 @@
-import { query, guardSelect } from "../db";
+import { query, guardSelect, crossBasisJoin, CROSS_BASIS_WARNING } from "../db";
 import { citations, num } from "../citation";
 import { type Gov } from "../helpers";
 import { lookupGlossary } from "../glossary";
@@ -8,7 +8,9 @@ export async function runSql(a: { query: string; limit?: number }): Promise<RunS
   const sql = guardSelect(a.query, a.limit ?? 200); // throws on invalid input
   try {
     const rows = await query(sql);
-    return { sql, row_count: rows.length, rows };
+    const out: RunSqlResult = { sql, row_count: rows.length, rows };
+    // Warn, don't refuse — see CROSS_BASIS_WARNING in db.ts for the rationale.
+    return crossBasisJoin(sql) ? { ...out, warning: CROSS_BASIS_WARNING } : out;
   } catch (e: any) {
     throw new Error(`Query failed: ${e.message}`);
   }

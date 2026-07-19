@@ -33,6 +33,26 @@ export async function query<T = any>(sql: string, params: any[] = []): Promise<T
 const DENY = /\b(insert|update|delete|drop|alter|create|truncate|grant|revoke|copy|call|do|merge|pg_read_file|pg_ls_dir)\b/i;
 const CATALOG = /\b(pg_catalog|pg_authid|pg_shadow|information_schema|pg_roles|pg_user)\b/i;
 
+/**
+ * Cash vendor payments and budget appropriations are not comparable (different
+ * granularity, scope, content and basis — see docs/CHECKBOOK-GUARDRAIL.md).
+ * run_sql is an expert escape hatch, so a query touching both is warned about
+ * rather than refused: refusing would break legitimate exploratory analysis,
+ * but a silent join produces plausible, quotable, false numbers.
+ */
+export const CROSS_BASIS_WARNING =
+  "WARNING: this query touches both fact_vendor_payment (cash disbursements) and " +
+  "fact_budget_line (appropriations). These are NOT comparable: the checkbook has 70 " +
+  "spending units vs 25 budget departments (only 9 names match exactly), excludes direct " +
+  "salaries/wages, includes pension and debt service, and is cash-basis rather than " +
+  "appropriation-basis. Any ratio or difference between them is meaningless — e.g. this " +
+  "join yields 'City Attorney spent 78.2% of its budget', which is false. " +
+  "See docs/CHECKBOOK-GUARDRAIL.md.";
+
+export function crossBasisJoin(sql: string): boolean {
+  return /\bfact_vendor_payment\b/i.test(sql) && /\bfact_budget_line\b/i.test(sql);
+}
+
 /** Validate + shape a user query for the run_sql escape hatch. */
 export function guardSelect(raw: string, limit = 200): string {
   let sql = raw.trim().replace(/;+\s*$/, "");

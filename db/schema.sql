@@ -96,6 +96,55 @@ CREATE TABLE IF NOT EXISTS reconciliation_result (
 --
 -- WPF = attributed wisdom, never a fact source; context_chunk is prose, never reconciled.
 
+-- ===========================================================================
+-- VENDOR PAYMENTS (City Open Checkbook) — cash disbursements, NOT budget.
+--
+-- Deliberately NOT joinable to fact_budget_line. There is no dept_id here and
+-- no FK to dim_department, because there is no valid department-level
+-- "budget vs actual" between these two sources:
+--   * granularity: 70 spending units here vs 25 budget departments (9 names
+--     match exactly — a naive join silently returns 9 and drops 61)
+--   * scope: excludes direct salaries/wages (most of any department's budget)
+--   * content: includes pension, debt principal, interest — not operating spend
+--   * basis: cash (date paid) vs appropriation (fiscal year)
+-- Measured: that join yields "City Attorney spent 78.2% of budget" — plausible,
+-- quotable, and false. See docs/CHECKBOOK-GUARDRAIL.md.
+--
+-- Column names carry the warning into raw SQL: amount_paid (not amount),
+-- paid_on (not fiscal_year), unit_id (not dept_id). Relating the two requires
+-- the explicit crosswalk in crosswalks/, never an implicit join path.
+-- ===========================================================================
+CREATE TABLE IF NOT EXISTS dim_spending_unit (
+  unit_id   TEXT PRIMARY KEY,        -- checkbook's own 'Spending Department ID' (1654)
+  gov_id    TEXT REFERENCES dim_government,
+  unit_name TEXT NOT NULL            -- 'DER-Employee Benefits Division'
+);
+
+CREATE TABLE IF NOT EXISTS fact_vendor_payment (
+  payment_id   BIGSERIAL PRIMARY KEY,
+  doc_id       TEXT REFERENCES dim_document,       -- 'city-checkbook-2025'
+  unit_id      TEXT REFERENCES dim_spending_unit,  -- NOT dept_id, by design
+  voucher_id   TEXT NOT NULL,                      -- repeats: one voucher, many lines
+  paid_on      DATE NOT NULL,                      -- cash basis
+  vendor_name  TEXT NOT NULL,
+  account_description TEXT,
+  fund_code    TEXT,                               -- zero-padded, text ('0001')
+  fund_name    TEXT,
+  amount_paid  NUMERIC(14,2) NOT NULL,             -- negatives = refunds/reversals
+  amount_basis TEXT NOT NULL DEFAULT 'cash_disbursement',
+  source_row   INT NOT NULL,                       -- 1-based row in the sha256-pinned CSV
+  search       TSVECTOR GENERATED ALWAYS AS
+               (to_tsvector('english', vendor_name)) STORED
+);
+CREATE INDEX IF NOT EXISTS idx_fvp_unit   ON fact_vendor_payment (unit_id, paid_on);
+CREATE INDEX IF NOT EXISTS idx_fvp_vendor ON fact_vendor_payment USING GIN (search);
+CREATE INDEX IF NOT EXISTS idx_fvp_doc    ON fact_vendor_payment (doc_id);
+
+COMMENT ON TABLE fact_vendor_payment IS
+  'Cash vendor disbursements (City Open Checkbook). NOT comparable to fact_budget_line: '
+  'different granularity, scope (excludes salaries), content (includes debt/pension) and '
+  'basis (cash vs appropriation). Do not join to fact_budget_line. See docs/CHECKBOOK-GUARDRAIL.md.';
+
 -- Per-school budget + enrollment (MPS), kept separate from the budget ledger so
 -- name-keyed school metrics don't collide with the code-keyed departments.
 CREATE TABLE IF NOT EXISTS fact_school (
