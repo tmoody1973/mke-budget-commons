@@ -2,7 +2,7 @@
 
 import type { Gov } from "./nav-items";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { NAV_ITEMS } from "./nav-items";
 import { HowToUse } from "@/components/onboarding/HowToUse";
@@ -12,6 +12,7 @@ import { Methodology } from "@/components/onboarding/Methodology";
 export function TopNav() {
   const router = useRouter();
   const params = useSearchParams();
+  const pathname = usePathname();
 
   const govParam = params.get("gov");
   const hasGov = govParam === "city" || govParam === "county" || govParam === "mps";
@@ -33,7 +34,16 @@ export function TopNav() {
 
       <nav className="ml-2 flex min-w-0 items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {NAV_ITEMS.map((item) => {
-          const active = item.gov ? hasGov && item.gov === gov : item.href === "/" ? !hasGov : false;
+          // Route-aware: gov items only ever match on "/", and a standalone route
+          // (/spending, /grants) matches its own path. Without the pathname check,
+          // Dashboard highlighted on every non-gov page — including the new routes.
+          const itemPath = item.href.split("?")[0];
+          const active =
+            item.gov
+              ? pathname === "/" && hasGov && item.gov === gov
+              : itemPath === "/"
+                ? pathname === "/" && !hasGov
+                : pathname === itemPath;
           const Icon = item.icon;
           return (
             <button
@@ -41,6 +51,9 @@ export function TopNav() {
               // shrink-0: nav scrolls as a whole rather than each label compressing
               // to an unreadable width.
               onClick={() => go(item.href)}
+              // The label is hidden below sm, so the button would otherwise be an
+              // icon with no accessible name.
+              aria-label={item.label}
               aria-current={active ? "page" : undefined}
               className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
                 active ? "bg-primary/10 text-primary" : "text-default-600 hover:bg-default-100"

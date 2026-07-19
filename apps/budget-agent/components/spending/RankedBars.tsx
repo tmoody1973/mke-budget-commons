@@ -74,7 +74,9 @@ export function RankedBars({
             }}
             contentStyle={{ fontSize: 12, borderRadius: 10 }}
           />
-          <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+          {/* No static radius: it rounds the same corners for every bar, which puts
+              the rounding on the wrong end of negative (refund/deobligation) bars. */}
+          <Bar dataKey="value">
             {data.map((d, i) => (
               <Cell key={i} fill={d.value < 0 ? NEGATIVE : POSITIVE} />
             ))}

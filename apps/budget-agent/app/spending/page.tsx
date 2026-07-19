@@ -82,7 +82,9 @@ export default async function Spending({
             Top vendors {year ? `· ${year}` : "· 2022–2026"}
           </h2>
           <p className="mb-3 text-xs text-default-500">
-            Net of refunds and reversals. {total > 0 && `Top 15 shown, totalling ${usd(total)}.`}
+            Net of refunds and reversals.{" "}
+            {vendorRows.length > 0 &&
+              `Top ${vendorRows.length} shown, totalling ${usd(total)}.`}
           </p>
           <RankedBars rows={vendorRows} valueLabel="Net paid" />
           <details className="mt-3">
