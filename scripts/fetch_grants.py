@@ -131,8 +131,10 @@ def read_extract(url: str) -> list[dict]:
         with z.open(names[0]) as fh:
             # Fields contain embedded newlines — must go through a real CSV
             # reader, never line counting (the raw file has 2,949 lines for
-            # 1,676 records).
-            return list(csv.DictReader(io.TextIOWrapper(fh, encoding="utf-8")))
+            # 1,676 records). newline="" is required by the csv docs: without it
+            # the wrapper translates \r\n before the parser sees it, which can
+            # mangle newlines inside quoted fields — precisely what this data has.
+            return list(csv.DictReader(io.TextIOWrapper(fh, encoding="utf-8", newline="")))
 
 
 def fetch_year(fy: int) -> dict:
