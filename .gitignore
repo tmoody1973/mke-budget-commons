@@ -16,4 +16,13 @@ wi-policy-forum/
 # `python -m parsers.wpf_briefs`); Neon holds them, and explain() serves short
 # attributed passages. Only the parser + counts-only QA report are committed.
 data/canonical/context/
+
+# Open Checkbook raw CSVs — 77MB across 5 years, and regenerable in ~7 min via
+# `make fetch-checkbook` (each year verified against its published total, and
+# sha256-pinned in data/raw/sources.yml). The canonical Parquet IS committed
+# (6.2MB, lossless minus quasi_id) — see docs/OPEN-CHECKBOOK-API.md.
+# Not a Git LFS candidate: LFS pointers are undiffable, and its bandwidth quota
+# is consumed by every Vercel build fetch.
+data/raw/city/checkbook/*.csv
+
 .vercel

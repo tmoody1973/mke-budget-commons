@@ -18,7 +18,14 @@ Government budgets are published as giant PDFs (and, for MPS, a spreadsheet) tha
 | **City of Milwaukee** | 2027 Requested Budget | ✅ live | diff document (4 vintages) |
 | **Milwaukee County** | 2026 Adopted Operating Budget | ✅ live | 37/37 chapters, 0 findings, 0 not-reconcilable |
 | **Milwaukee Public Schools** | FY2026-27 Revised Proposed Budget | ✅ live | 33,283 line items → $1,600,555,548 printed total, dollar-exact (2 vintages) |
+| **City of Milwaukee** | Open Checkbook 2022–2026 (vendor payments) | ✅ acquired | 404,120 payments → $4,937,976,866.16 published total, dollar-exact (5/5 years) |
 | Milwaukee County | 2026 Capital Budget | ⛔ parked | OCR-degraded — not reconciliation-grade |
+
+**Open Checkbook is actual vendor disbursements, not budget** — a separate series, not
+"actuals vs. budget." It excludes salaries and fringe (most of any department's budget),
+is cash-basis rather than appropriation-basis, and omits interdepartmental charges.
+Comparing it line-for-line against adopted budget figures produces confident, wrong answers.
+See [`docs/OPEN-CHECKBOOK-API.md`](docs/OPEN-CHECKBOOK-API.md).
 
 ## Architecture (4 layers)
 
@@ -46,6 +53,7 @@ pip install -r requirements.txt
 
 make parse-city-detailed FY=2026 TYPE=adopted   # parse a city doc + write its reconciliation report
 make parse-county-operating                     # parse the county operating book + report
+make fetch-checkbook                            # pull City Open Checkbook via API → verified Parquet
 make reconcile                                  # run the full pytest reconciliation suite (the trust layer)
 
 make load-neon                                  # rebuild Neon from repo Parquet (idempotent)
@@ -88,9 +96,9 @@ data/canonical/   extracted, reconciled Parquet (source of truth) + CSV (human-d
 crosswalks/       department / fund / footnote maps across years
 db/               Neon Postgres schema + idempotent loader
 mcp/              L3 TypeScript MCP server (tools + read-only SQL guard + smoke tests)
-scripts/          per-document reconciliation report generators
+scripts/          per-document reconciliation report generators + data acquisition (fetch_checkbook)
 apps/explainer/   L4 standalone public budget explainer (reads L3, fully cited)
-docs/             PRD, reconciliation reports, handoffs
+docs/             PRD, reconciliation reports, handoffs, OPEN-CHECKBOOK-API.md
 ```
 
 ## The rules that make it trustworthy
