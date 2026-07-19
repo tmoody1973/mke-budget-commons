@@ -12,6 +12,7 @@ export * from "./queries/schools";
 export * from "./queries/context";
 export * from "./queries/payments";
 export * from "./queries/grants";
+export * from "./queries/freshness";
 export * from "./embed";
 export * from "./schemas";
 export * from "./types";
