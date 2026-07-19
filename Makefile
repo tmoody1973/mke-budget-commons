@@ -1,4 +1,4 @@
-.PHONY: help parse-city-detailed parse-city-book parse-county-operating reconcile \
+.PHONY: help parse-city-detailed parse-city-book parse-county-operating fetch-checkbook checkbook-parquet reconcile \
         load-neon parse-wpf load-context mcp-install mcp-dev mcp-test tools-test clean
 
 help:
@@ -7,6 +7,8 @@ help:
 	@echo "  make parse-city-book FY=2026 TYPE=adopted        parse the whole adopted ledger (+report)"
 	@echo "  make parse-city-requested                        parse the 2027 requested budget (+report)"
 	@echo "  make parse-county-operating FY=2026             parse the county operating budget"
+	@echo "  make fetch-checkbook [YEARS='2024 2025']        pull City Open Checkbook via API (verified)"
+	@echo "  make checkbook-parquet                          re-derive checkbook Parquet from raw CSVs"
 	@echo "  make reconcile                                  run reconciliation pytest suite"
 	@echo "  make load-neon                                  rebuild Neon from repo Parquet (idempotent)"
 	@echo "  make mcp-install                                install the MCP server's node deps"
@@ -29,6 +31,17 @@ parse-city-book:
 
 parse-city-requested:
 	python -m scripts.report_city_requested
+
+# Pulls the City Open Checkbook from OpenGov's public (undocumented) API, one file
+# per fiscal year, each verified against that year's published count + total.
+# Exits non-zero if any year fails. See docs/OPEN-CHECKBOOK-API.md.
+fetch-checkbook:
+	python -m scripts.fetch_checkbook $(YEARS)
+	python -m scripts.checkbook_to_parquet $(YEARS)
+
+# Re-derive canonical Parquet from raw CSVs already on disk (no network).
+checkbook-parquet:
+	python -m scripts.checkbook_to_parquet $(YEARS)
 
 parse-county-operating:
 	python -m parsers.county_operating
@@ -66,6 +79,7 @@ mcp-test:
 	cd mcp && node test/smoke.mjs
 	cd mcp && node test/smoke_county.mjs
 	cd mcp && node test/smoke_mps.mjs
+	cd mcp && node test/smoke_payments.mjs
 
 tools-test:
 	npm run -w @mke/budget-tools test

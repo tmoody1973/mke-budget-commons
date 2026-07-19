@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import os
 import secrets
+from decimal import Decimal
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse
 
@@ -80,7 +81,25 @@ SCHOOL_STATUS_MAP = {"PASS": "pass", "FAIL": "open", "UNMATCHED": "not_reconcila
 
 DATA_TABLES = [
     "reconciliation_result", "fact_school", "fact_amendment", "fact_budget_line",
+    "fact_vendor_payment", "dim_spending_unit",
     "dept_alias", "dim_department", "dim_document", "dim_government",
+]
+
+# City Open Checkbook — cash disbursements, loaded into their OWN tables and
+# deliberately not joinable to the budget ledger (see docs/CHECKBOOK-GUARDRAIL.md).
+# Anchors are the portal's published per-year totals; a year that doesn't
+# reconcile is not loaded.
+CHECKBOOK_DOCS = [
+    {"doc_id": f"city-checkbook-{fy}",
+     "parquet": ROOT / f"data/canonical/city/{fy}/actual/city-checkbook.parquet",
+     "rows": rows, "total": total}
+    for fy, rows, total in [
+        # Decimal, and the gate below demands exact equality: with float a real
+        # one-cent miss can compute as 0.00999999… and slip past a < 0.01 check.
+        (2022, 94_203, Decimal("945047260.77")), (2023, 92_043, Decimal("981221393.92")),
+        (2024, 91_218, Decimal("1137479102.02")), (2025, 91_848, Decimal("1186269947.32")),
+        (2026, 34_808, Decimal("687959162.13")),
+    ]
 ]
 
 STATUS_MAP = {
@@ -270,6 +289,48 @@ def load_reconciliation_mps(cur) -> int:
     return len(rows)
 
 
+def load_vendor_payments(cur) -> tuple[int, int]:
+    """City Open Checkbook → dim_spending_unit + fact_vendor_payment.
+
+    Re-verifies each year against its published count and total before loading.
+    A year that fails is skipped loudly, never partially loaded — the same
+    contract the budget parsers get, using the portal's totals as the anchor.
+    """
+    units: dict[str, tuple[str, str]] = {}
+    rows: list[tuple] = []
+    for doc in CHECKBOOK_DOCS:
+        if not doc["parquet"].exists():
+            print(f"  ! {doc['doc_id']}: missing {doc['parquet']} — run `make fetch-checkbook`")
+            continue
+        df = pd.read_parquet(doc["parquet"])
+        got_sum = sum((Decimal(str(v)) for v in df["amount"]), Decimal(0))
+        if len(df) != doc["rows"] or got_sum != doc["total"]:
+            print(f"  ! {doc['doc_id']}: RECONCILIATION FAILED "
+                  f"({len(df):,} rows / ${got_sum:,.2f} vs published "
+                  f"{doc['rows']:,} / ${doc['total']:,.2f}) — NOT LOADED")
+            continue
+        for u, n in df[["spending_department_id", "spending_department_name"]].drop_duplicates().itertuples(index=False):
+            units[str(u)] = ("city", str(n))
+        # source_row is the 1-based row in the sha256-pinned raw CSV (header = row 1).
+        for i, r in enumerate(df.itertuples(index=False), start=2):
+            rows.append((doc["doc_id"], str(r.spending_department_id), str(r.voucher_id_0),
+                         r.date, str(r.vendor_name), _clean(r.account_description),
+                         str(r.fund_0), _clean(r.descr), float(r.amount), i))
+
+    cur.executemany(
+        "INSERT INTO dim_spending_unit (unit_id, gov_id, unit_name) VALUES (%s,%s,%s)",
+        [(u, g, n) for u, (g, n) in sorted(units.items())],
+    )
+    cur.executemany(
+        """INSERT INTO fact_vendor_payment
+           (doc_id, unit_id, voucher_id, paid_on, vendor_name, account_description,
+            fund_code, fund_name, amount_paid, source_row)
+           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+        rows,
+    )
+    return len(units), len(rows)
+
+
 def load_school_facts(cur) -> int:
     """Per-school budget + enrollment → fact_school (separate from the ledger)."""
     rows = []
@@ -367,6 +428,7 @@ def main() -> None:
             load_departments(cur, df)
             n_facts = load_facts(cur, df)
             load_school_facts(cur)      # into fact_school, kept off the budget ledger
+            n_units, n_pay = load_vendor_payments(cur)   # own tables, not joinable to the ledger
             n_recon = (load_reconciliation(cur) + load_reconciliation_county(cur)
                        + load_reconciliation_county_taxlevy(cur)
                        + load_reconciliation_mps(cur) + load_reconciliation_mps_schools(cur))
@@ -378,6 +440,8 @@ def main() -> None:
     print(f"  docs: {', '.join(sorted(df['doc_id'].unique()))}")
     print(f"  {df['department_printed'].nunique()} departments · {n_facts} budget lines · "
           f"{n_recon} reconciliation checks")
+    print(f"  {n_pay} vendor payments across {n_units} spending units "
+          f"(cash basis — not joinable to the budget ledger)")
     print("  read-only role mcp_ro ready · MCP_DATABASE_URL written to .env")
 
 

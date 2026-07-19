@@ -22,3 +22,9 @@ export const mpsFundSummaryShape = { fiscal_year: z.number().int().default(2027)
 export const perPupilRankingShape = { fiscal_year: z.number().int().default(2027), order: z.enum(["highest", "lowest"]).default("highest"), min_enrollment: z.number().int().default(0), limit: z.number().int().max(60).default(20) };
 // Layer-2 WPF context retrieval — semantic, secondary commentary (never figures).
 export const explainShape = { question: z.string(), gov: gov().optional(), k: z.number().int().min(1).max(12).default(4) };
+
+// Vendor payments (City Open Checkbook) — cash disbursements, never budget figures.
+export const searchVendorPaymentsShape = { vendor: z.string().optional(), unit: z.string().optional(), account: z.string().optional(), year: z.number().int().optional(), min_amount: z.number().optional(), limit: z.number().int().max(50).default(20) };
+export const getTopVendorsShape = { unit: z.string().optional(), year: z.number().int().optional(), limit: z.number().int().max(50).default(15) };
+export const vendorPaymentSummaryShape = { unit: z.string().optional(), year: z.number().int().optional(), group_by: z.enum(["account", "fund", "year", "unit"]).default("account") };
+export const compareBudgetToPaymentsShape = { department: z.string(), fiscal_year: z.number().int().optional() };

@@ -5,6 +5,9 @@ import {
   compareYears, traceAdoption, biggestChanges, getPositions, findPositions,
   searchLineItems, cite, reconciliationStatus, glossaryLookup, runSql,
   compareSchools, mpsFundSummary, perPupilRanking, getAmendments, explain,
+  searchVendorPayments, getTopVendors, vendorPaymentSummary, compareBudgetToPayments,
+  searchVendorPaymentsShape, getTopVendorsShape, vendorPaymentSummaryShape,
+  compareBudgetToPaymentsShape,
   listDepartmentsShape, getDepartmentBudgetShape, budgetBreakdownShape,
   compareYearsShape, traceAdoptionShape, biggestChangesShape, getPositionsShape, findPositionsShape,
   searchLineItemsShape, citeShape, reconciliationStatusShape, glossaryShape, runSqlShape,
@@ -202,6 +205,61 @@ server.registerTool(
   "get_amendments",
   { title: "get_amendments", description: "(Not yet available — needs the amendment (file/markup) documents.)", inputSchema: {} },
   async () => wrap(() => getAmendments()),
+);
+
+// --------------------------------------------------------------------------- //
+// Vendor payments (City Open Checkbook) — cash disbursements. These never return
+// a budget figure, and every response carries comparable_to_budget: false.
+// The tool descriptions state the non-comparability because that is what a model
+// reads when deciding which tool to call. See docs/CHECKBOOK-GUARDRAIL.md.
+
+const NOT_BUDGET =
+  " Cash disbursements from the City Open Checkbook — NOT budget, and NOT actuals-against-budget: " +
+  "excludes payroll, includes debt service and pension, cash-basis. Never compare these figures " +
+  "to budget amounts; use compare_budget_to_payments to see why.";
+
+server.registerTool(
+  "search_vendor_payments",
+  {
+    title: "Search vendor payments",
+    description:
+      "Find individual City payments by vendor, spending unit, account, year, or minimum amount, each cited to its source row." + NOT_BUDGET,
+    inputSchema: searchVendorPaymentsShape,
+  },
+  async (a) => wrap(() => searchVendorPayments(a)),
+);
+
+server.registerTool(
+  "get_top_vendors",
+  {
+    title: "Top vendors by dollars paid",
+    description:
+      "Largest vendors by net dollars received, citywide or for one spending unit. Refunds/reversals are netted; gross and refunds are reported separately." + NOT_BUDGET,
+    inputSchema: getTopVendorsShape,
+  },
+  async (a) => wrap(() => getTopVendors(a)),
+);
+
+server.registerTool(
+  "vendor_payment_summary",
+  {
+    title: "Vendor payment summary",
+    description:
+      "Aggregate payments by account category, fund, year, or spending unit — what a unit actually pays for, and how that shifts over time." + NOT_BUDGET,
+    inputSchema: vendorPaymentSummaryShape,
+  },
+  async (a) => wrap(() => vendorPaymentSummary(a)),
+);
+
+server.registerTool(
+  "compare_budget_to_payments",
+  {
+    title: "Budget vs. vendor payments (always refuses — explains why)",
+    description:
+      "Call this when asked whether a department 'spent its budget', or to compare budgeted vs actual spending. It ALWAYS returns comparable: false and explains why no valid department-level budget-vs-actual exists between these sources, then lists the questions that CAN be answered. Do not construct this comparison yourself — joining the two produces plausible, quotable, false numbers.",
+    inputSchema: compareBudgetToPaymentsShape,
+  },
+  async (a) => wrap(() => compareBudgetToPayments(a)),
 );
 
 const transport = new StdioServerTransport();

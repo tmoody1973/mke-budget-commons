@@ -112,3 +112,86 @@ documents:
     text_layer: native
     retrieved_on: 2026-07-07
     sha256: cf9094032f5f6df195e79dff02fbb4fde118f49d535515f590b904192944d622
+
+  # ---------------------------------------------------------------------------
+  # City Open Checkbook — actual vendor disbursements (NOT budget; see
+  # docs/OPEN-CHECKBOOK-API.md). Acquired from OpenGov's public but UNDOCUMENTED
+  # transactions API via `make fetch-checkbook`, not a manual download: the
+  # portal's CSV export silently truncates at 50,000 rows. Each year is verified
+  # against its own published count + total (the reconciliation anchor).
+  # There are no pages — provenance is the API row's voucher id + file sha256.
+
+  - doc_id: city-checkbook-2022
+    gov: city
+    fiscal_year: 2022
+    doc_type: actual
+    doc_family: checkbook
+    file: data/raw/city/checkbook/city-open-checkbook-2022.csv
+    source_url: https://milwaukee.opengov.com/transparency#/66975
+    api_endpoint: https://milwaukee.opengov.com/api/transactions/v2/query/ec781edd-ba12-428f-b679-bf357c92b6a7
+    text_layer: api            # JSON → CSV, no PDF
+    rows: 94203
+    published_total: 945047260.77
+    reconciled: dollar-exact   # delta $0.00 vs published total
+    retrieved_on: 2026-07-18
+    sha256: 60517d39de9b7df115c6eacffd0593d14a6b50606f301caaff038b5501aadeac
+
+  - doc_id: city-checkbook-2023
+    gov: city
+    fiscal_year: 2023
+    doc_type: actual
+    doc_family: checkbook
+    file: data/raw/city/checkbook/city-open-checkbook-2023.csv
+    source_url: https://milwaukee.opengov.com/transparency#/66975
+    api_endpoint: https://milwaukee.opengov.com/api/transactions/v2/query/ec781edd-ba12-428f-b679-bf357c92b6a7
+    text_layer: api            # JSON → CSV, no PDF
+    rows: 92043
+    published_total: 981221393.92
+    reconciled: dollar-exact   # delta $0.00 vs published total
+    retrieved_on: 2026-07-18
+    sha256: ec79ac5cc44b79a386292b6c445ef07e34a083847a088b027a73a89f770ebc62
+
+  - doc_id: city-checkbook-2024
+    gov: city
+    fiscal_year: 2024
+    doc_type: actual
+    doc_family: checkbook
+    file: data/raw/city/checkbook/city-open-checkbook-2024.csv
+    source_url: https://milwaukee.opengov.com/transparency#/66975
+    api_endpoint: https://milwaukee.opengov.com/api/transactions/v2/query/ec781edd-ba12-428f-b679-bf357c92b6a7
+    text_layer: api            # JSON → CSV, no PDF
+    rows: 91218
+    published_total: 1137479102.02
+    reconciled: dollar-exact   # delta $0.00 vs published total
+    retrieved_on: 2026-07-18
+    sha256: 7ed9b47d35ed1763893ad50e13ab769af86755f9294f830e58cdca78be143f77
+
+  - doc_id: city-checkbook-2025
+    gov: city
+    fiscal_year: 2025
+    doc_type: actual
+    doc_family: checkbook
+    file: data/raw/city/checkbook/city-open-checkbook-2025.csv
+    source_url: https://milwaukee.opengov.com/transparency#/66975
+    api_endpoint: https://milwaukee.opengov.com/api/transactions/v2/query/ec781edd-ba12-428f-b679-bf357c92b6a7
+    text_layer: api            # JSON → CSV, no PDF
+    rows: 91848
+    published_total: 1186269947.32
+    reconciled: dollar-exact   # delta $0.00 vs published total
+    retrieved_on: 2026-07-18
+    sha256: bf89a0e646af176ae6b6894c2125df74f1a973b2098e083c188c31a0adc645fd
+
+  - doc_id: city-checkbook-2026
+    gov: city
+    fiscal_year: 2026
+    doc_type: actual
+    doc_family: checkbook
+    file: data/raw/city/checkbook/city-open-checkbook-2026.csv
+    source_url: https://milwaukee.opengov.com/transparency#/66975
+    api_endpoint: https://milwaukee.opengov.com/api/transactions/v2/query/ec781edd-ba12-428f-b679-bf357c92b6a7
+    text_layer: api            # JSON → CSV, no PDF
+    rows: 34808
+    published_total: 687959162.13
+    reconciled: dollar-exact   # delta $0.00 vs published total
+    retrieved_on: 2026-07-18
+    sha256: f831df87563392b3132136ee1eb6dcec8234b82e995ca63dac1d5d36c2120565

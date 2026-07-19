@@ -270,7 +270,7 @@ export type PerPupilRanking = {
 // search.ts
 // --------------------------------------------------------------------------- //
 
-export type RunSqlResult = { sql: string; row_count: number; rows: Record<string, unknown>[] };
+export type RunSqlResult = { sql: string; row_count: number; rows: Record<string, unknown>[]; warning?: string };
 
 export type SearchResults = {
   query: string;
@@ -348,4 +348,57 @@ export type ExplainResult = {
   question: string;
   passages: ContextPassage[];
   note: string;
+};
+
+// --------------------------------------------------------------------------- //
+// Vendor payments (City Open Checkbook) — cash disbursements, NOT budget.
+// `basis` rides on every response; see docs/CHECKBOOK-GUARDRAIL.md.
+
+export type PaymentBasis = {
+  amount_basis: "cash_disbursement";
+  excludes: string[];
+  includes_non_operating: string[];
+  comparable_to_budget: false;
+  note: string;
+};
+
+export type PaymentCite = { doc_id: string; source_row: number; locator: "row" };
+
+export type VendorPaymentResults = {
+  hits: number;
+  results: {
+    payment_id: number; voucher_id: string; paid_on: string; vendor: string;
+    spending_unit: string; account: string | null; fund: string | null;
+    amount_paid: number | null;
+  }[];
+  basis: PaymentBasis;
+  citations: PaymentCite[];
+};
+
+export type TopVendors = {
+  scope: { unit: string; year: number | string };
+  vendors: {
+    vendor: string; net_paid: number | null; gross_paid: number | null;
+    refunds: number; payment_count: number;
+  }[];
+  basis: PaymentBasis;
+  citations: PaymentCite[];
+};
+
+export type PaymentSummary = {
+  grouped_by: "account" | "fund" | "year" | "unit";
+  scope: { unit: string; year: number | string };
+  buckets: { bucket: string; net_paid: number | null; payment_count: number }[];
+  basis: PaymentBasis;
+  citations: PaymentCite[];
+};
+
+export type BudgetVsPayments = {
+  comparable: false;
+  requested: { department: string; fiscal_year: number | null };
+  reason: string;
+  budget_execution_available: false;
+  matching_spending_units: string[];
+  what_you_can_ask_instead: string[];
+  basis: PaymentBasis;
 };
