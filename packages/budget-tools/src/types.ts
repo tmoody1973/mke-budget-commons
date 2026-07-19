@@ -449,3 +449,19 @@ export type GrantSummary = {
   basis: GrantBasis;
   citations: GrantCite[];
 };
+
+// --------------------------------------------------------------------------- //
+// Data freshness — makes staleness visible rather than silent.
+
+export type SourceFreshness = {
+  source: "vendor_payments" | "federal_grants" | "budget_documents";
+  label: string;
+  through: string | null;        // latest record date, ISO
+  records: number;
+  days_old: number | null;
+  update_cadence: string;
+  stale_after_days: number;
+  is_stale: boolean;
+};
+
+export type Freshness = { sources: SourceFreshness[]; checked_at: string };

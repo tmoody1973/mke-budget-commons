@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 
-import { ChartColumn, FileText, GraduationCap, House } from "@gravity-ui/icons";
+import { ChartColumn, CreditCard, FileText, Gift, GraduationCap, House } from "@gravity-ui/icons";
 
 export type Gov = "city" | "county" | "mps";
 
@@ -18,4 +18,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { href: "/?gov=city", icon: ChartColumn, label: "City", gov: "city" },
   { href: "/?gov=county", icon: FileText, label: "County", gov: "county" },
   { href: "/?gov=mps", icon: GraduationCap, label: "MPS", gov: "mps" },
+  { href: "/spending", icon: CreditCard, label: "Spending" },
+  { href: "/grants", icon: Gift, label: "Grants" },
 ] as const;
